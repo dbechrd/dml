@@ -33,5 +33,5 @@ const char *parse_string(file *f, char delim) {
     char buf[STRING_MAX_LEN + 1] = { 0 };
     size_t len;
     eat_chars(buf, STRING_MAX_LEN, &len, f, delim);
-    return sym(buf, len);
+    return intern(buf, len);
 }

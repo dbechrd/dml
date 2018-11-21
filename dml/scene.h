@@ -8,6 +8,8 @@ typedef struct scene {
     entity *entities;
 } scene;
 
+void init_type_loaders();
+
 scene *scene_init();
 void scene_save(scene *scn, file *entitydb);
 scene *scene_load(file *f);

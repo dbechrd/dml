@@ -132,6 +132,9 @@
     <ClInclude Include="scene.h" />
     <ClInclude Include="symbol.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="data\scene.dat" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

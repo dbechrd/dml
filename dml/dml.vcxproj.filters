@@ -49,4 +49,7 @@
       <UniqueIdentifier>{053d3ab6-0709-4cc5-8ace-f674bdc98b56}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="data\scene.dat" />
+  </ItemGroup>
 </Project>

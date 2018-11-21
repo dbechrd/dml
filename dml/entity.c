@@ -7,16 +7,6 @@
 #include "dlb_types.h"
 #include "dlb_vector.h"
 
-entity *entity_init(scene *scn, uint32_t uid) {
-    if (uid) {
-        DLB_ASSERT(uid >= scn->uid);
-        scn->uid = uid;
-    }
-    entity *e = dlb_vec_alloc(scn->entities);
-    e->uid = scn->uid++;
-    return e;
-}
-
 void entity_print(FILE *hnd, entity *e) {
     fprintf(hnd, "!%d:entity\n", e->uid);
     for (prop *prop = e->properties; prop != dlb_vec_end(e->properties); prop++) {
@@ -45,7 +35,19 @@ void entity_save(entity *e, file *f) {
     entity_print(f->hnd, e);
 }
 
-void entity_load(entity *e, file *f) {
+static entity *entity_init(scene *scn, uint32_t uid) {
+    if (uid) {
+        DLB_ASSERT(uid >= scn->uid);
+        scn->uid = uid;
+    }
+    entity *e = dlb_vec_alloc(scn->entities);
+    e->uid = scn->uid++;
+    return e;
+}
+
+void entity_load(scene *scn, uint32_t uid, file *f) {
+    entity *e = entity_init(scn, uid);
+
     for (;;) {
         char c = file_getc(f);
         switch(c) {
@@ -90,10 +92,10 @@ void entity_free(entity *e) {
 entity *entity_create(scene *scn, const char *name, int age, float weight,
                       const char *height, const char *city) {
     entity *e = entity_init(scn, 0);
-    prop_set_string(e, SYM(STRING(name)), name);
-    prop_set_int(e, SYM(STRING(age)), age);
-    prop_set_float(e, SYM(STRING(weight)), weight);
-    prop_set_string(e, SYM(STRING(height)), height);
-    prop_set_string(e, SYM(STRING(city)), city);
+    prop_set_string(e, intern(CSTR("name")), name);
+    prop_set_int(e, intern(CSTR("age")), age);
+    prop_set_float(e, intern(CSTR("weight")), weight);
+    prop_set_string(e, intern(CSTR("height")), height);
+    prop_set_string(e, intern(CSTR("city")), city);
     return e;
 }

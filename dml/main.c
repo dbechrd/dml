@@ -20,7 +20,8 @@
 #include "dlb_arena.h"
 
 int main(int argc, char *argv[]) {
-    sym_init();
+    init_symbols();
+    init_type_loaders();
 
     const char *filename = "data/scene.dat";
     scene *scene = scene_init();
