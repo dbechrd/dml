@@ -116,10 +116,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="entity.c" />
+    <ClCompile Include="file.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="parse.c" />
+    <ClCompile Include="prop.c" />
+    <ClCompile Include="scene.c" />
+    <ClCompile Include="symbol.c" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="scene.dat" />
+    <ClInclude Include="entity.h" />
+    <ClInclude Include="file.h" />
+    <ClInclude Include="parse.h" />
+    <ClInclude Include="prop.h" />
+    <ClInclude Include="scene.h" />
+    <ClInclude Include="symbol.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
