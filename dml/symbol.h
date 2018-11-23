@@ -15,13 +15,11 @@ const char *intern(const char *s, size_t len);
 void init_symbols();
 
 typedef struct dlb_symbol__hdr {
-    uint32_t hash;
     size_t len;
 } dlb_symbol__hdr;
 
 #define dlb_symbol__hdr(s) ((dlb_symbol__hdr *)((char *)s - sizeof(dlb_symbol__hdr)))
 
-#define dlb_symbol_hash(s) ((s) ? dlb_symbol__hdr(s)->hash : 0)
 #define dlb_symbol_len(s) ((s) ? dlb_symbol__hdr(s)->len : 0)
 //#define dlb_symbol_end(s) ((s) + dlb_symbol_len(s))
 //#define dlb_symbol_last(s) (&(s)[dlb_symbol__hdr(s)->len-1])
@@ -29,11 +27,10 @@ typedef struct dlb_symbol__hdr {
 #define dlb_symbol_alloc(s, len) (dlb_symbol__alloc((s), (len)))
 #define dlb_symbol_free(s) ((s) ? (free(dlb_symbol__hdr(s)), (s) = NULL) : 0)
 
-static inline const char *dlb_symbol__alloc(const char *buf, size_t len) {
+static inline char *dlb_symbol__alloc(const char *buf, size_t len) {
     size_t new_size = sizeof(dlb_symbol__hdr) + len + 1;
     dlb_symbol__hdr *sym = dlb_calloc(1, new_size);
     sym->len = len;
-    sym->hash = hash_string(buf, len);
     char *str = (char *)sym + sizeof(dlb_symbol__hdr);
     memcpy(str, buf, len);
     str[len] = 0;

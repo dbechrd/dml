@@ -11,7 +11,7 @@
 struct dlb_hash type_loaders;
 void init_type_loaders() {
     dlb_hash_init(&type_loaders, "Type Loaders", 10, 2);
-    dlb_hash_insert(&type_loaders, dlb_symbol_hash(sym_entity), 0);
+    //dlb_hash_insert(&type_loaders, dlb_symbol_hash(sym_entity), 0);
 };
 
 scene *scene_init() {
