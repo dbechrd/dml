@@ -14,29 +14,40 @@ void init_type_loaders() {
     //dlb_hash_insert(&type_loaders, dlb_symbol_hash(sym_entity), 0);
 };
 
-scene *scene_init() {
+scene *scene_init(const char *name) {
     scene *scn = dlb_calloc(1, sizeof(*scn));
-    scn->uid = 1;
+    scn->name = name;
+    scn->next_uid = 1;
     dlb_vec_reserve(scn->entities, 2);
     return scn;
 }
 
+void scene_free(scene *scn) {
+    for (entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
+        entity_free(e);
+    }
+    dlb_vec_free(scn->entities);
+    free(scn);
+}
+
 void scene_save(scene *scn, file *entitydb) {
+    fprintf(entitydb->hnd, "%s\n", scn->name);
     for (entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
         entity_save(e, entitydb);
     }
 }
 
 scene *scene_load(file *f) {
-    scene *scn = scene_init();
+    const char *name = read_string(f, '\n', CHAR_SCENE_NAME);
+    scene *scn = scene_init(name);
     file_getc(f);
     for (;;) {
         switch(f->last) {
         case EOF:
             goto end;
         case '!': {
-            uint32_t uid = parse_int(f, ':');
-            const char *type = parse_string(f, '\n');
+            unsigned int uid = read_uint(f, ':');
+            const char *type = read_string(f, '\n', CHAR_TYPE_IDENTIFIER);
 
             // TODO: Register type names in lookup table that maps them to their
             //       respective loader
@@ -55,10 +66,13 @@ end:
     return scn;
 }
 
-void scene_free(scene *scn) {
+void scene_print(scene *scn) {
+    // Print loaded entities
+    printf("-- Scene ----------------------------\n");
+    printf("name: %s\n", scn->name);
+    printf("-- Entities -------------------------\n");
     for (entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
-        entity_free(e);
+        entity_print(stdout, e);
     }
-    dlb_vec_free(scn->entities);
-    free(scn);
+    printf("-------------------------------------\n");
 }

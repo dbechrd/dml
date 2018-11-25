@@ -12,6 +12,8 @@ file *file_open(const char *filename, file_mode mode) {
     file->filename = filename;
     file->mode = mode;
     file->hnd = hnd;
+    file->line_number = 1;
+    file->line_column = 1;
     return file;
 }
 

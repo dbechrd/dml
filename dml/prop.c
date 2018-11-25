@@ -7,32 +7,29 @@
 prop *prop_find(entity *e, const char *name) {
     bool found = false;
     prop *p = e->properties;
-    for (;;) {
-        if (p == dlb_vec_end(e->properties)) {
-            p = NULL;
-            break;
-        }
+    while (p != dlb_vec_end(e->properties)) {
         if (p->name == name) {
+            found = true;
             break;
         }
         p++;
     }
-    return p;
+    return found ? p : NULL;
 }
 
 prop *prop_find_or_create(entity *e, const char *name) {
     bool found = false;
     prop *p = e->properties;
-    for (;;) {
-        if (p == dlb_vec_end(e->properties)) {
-            p = dlb_vec_alloc(e->properties);
-            p->name = name;
-            break;
-        }
+    while (p != dlb_vec_end(e->properties)) {
         if (p->name == name) {
+            found = true;
             break;
         }
         p++;
+    }
+    if (!found) {
+        p = dlb_vec_alloc(e->properties);
+        p->name = name;
     }
     return p;
 }

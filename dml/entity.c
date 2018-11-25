@@ -7,27 +7,27 @@
 #include "dlb_types.h"
 #include "dlb_vector.h"
 
-void entity_print(FILE *hnd, entity *e) {
-    fprintf(hnd, "!%d:entity\n", e->uid);
+void entity_print(FILE *f, entity *e) {
+    fprintf(f, "!%d:entity\n", e->uid);
     for (prop *prop = e->properties; prop != dlb_vec_end(e->properties); prop++) {
-        fprintf(hnd, "  %s:%s", prop->name, prop_type_str(prop->type));
+        fprintf(f, "  %s:%s", prop->name, prop_type_str(prop->type));
         if (prop->array) {
-            fprintf(hnd, "[]");
+            fprintf(f, "[]");
         }
         switch(prop->type) {
         case PROP_INT:
-            fprintf(hnd, " = %d", prop->value.as_int);
+            fprintf(f, " = %d", prop->value.as_int);
             break;
         case PROP_FLOAT:
-            fprintf(hnd, " = %f", prop->value.as_float);
+            fprintf(f, " = 0x%x  # %f", *(unsigned *)&prop->value.as_float, prop->value.as_float);
             break;
         case PROP_STRING:
-            fprintf(hnd, " = \"%s\"", prop->value.as_string);
+            fprintf(f, " = \"%s\"", prop->value.as_string);
             break;
         default:
-            break;
+            DLB_ASSERT(0);
         }
-        fprintf(hnd, "\n");
+        fprintf(f, "\n");
     }
 }
 
@@ -35,17 +35,17 @@ void entity_save(entity *e, file *f) {
     entity_print(f->hnd, e);
 }
 
-static entity *entity_init(scene *scn, uint32_t uid) {
+entity *entity_init(scene *scn, unsigned int uid) {
     if (uid) {
-        DLB_ASSERT(uid >= scn->uid);
-        scn->uid = uid;
+        DLB_ASSERT(uid >= scn->next_uid);
+        scn->next_uid = uid;
     }
     entity *e = dlb_vec_alloc(scn->entities);
-    e->uid = scn->uid++;
+    e->uid = scn->next_uid++;
     return e;
 }
 
-void entity_load(scene *scn, uint32_t uid, file *f) {
+void entity_load(scene *scn, unsigned int uid, file *f) {
     entity *e = entity_init(scn, uid);
 
     for (;;) {
@@ -62,40 +62,35 @@ void entity_load(scene *scn, uint32_t uid, file *f) {
             DLB_ASSERT(0); // wtf?
         }
 
-        const char *name = parse_string(f, ':');
-        const char *type = parse_string(f, ' ');
+        const char *name = read_string(f, ':', CHAR_PROP_IDENTIFIER);
+
+        size_t f_lineno = f->line_number;
+        size_t f_column = f->line_column;
+        const char *type = read_string(f, ' ', CHAR_TYPE_IDENTIFIER);
         file_expect(f, '=');
         file_expect(f, ' ');
 
         prop *p = prop_find_or_create(e, name);
         if (type == sym_int) {
             p->type = PROP_INT;
-            p->value.as_int = parse_int(f, '\n');
+            p->value.as_int = read_int(f, '\n');
         } else if (type == sym_float) {
             p->type = PROP_FLOAT;
-            p->value.as_float = parse_float(f, '\n');
+            p->value.as_float = read_float(f, '\n');
         } else if (type == sym_string) {
             p->type = PROP_STRING;
             file_expect(f, '"');
-            p->value.as_string = parse_string(f, '"');
+            p->value.as_string = read_string(f, '"', 0);
             file_expect(f, '\n');
         } else {
-            DLB_ASSERT(0); // wtf?
+            fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Expected type identifier at line %d, column %d\n",
+                    f->filename, f->line_number, f->line_column, f_lineno, f_column);
+            getchar();
+            exit(1);
         }
     }
 }
 
 void entity_free(entity *e) {
     dlb_vec_free(e->properties);
-}
-
-entity *entity_create(scene *scn, const char *name, int age, float weight,
-                      const char *height, const char *city) {
-    entity *e = entity_init(scn, 0);
-    prop_set_string(e, intern(CSTR("name")), name);
-    prop_set_int(e, intern(CSTR("age")), age);
-    prop_set_float(e, intern(CSTR("weight")), weight);
-    prop_set_string(e, intern(CSTR("height")), height);
-    prop_set_string(e, intern(CSTR("city")), city);
-    return e;
 }

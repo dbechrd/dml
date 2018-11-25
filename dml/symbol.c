@@ -25,7 +25,7 @@ const char *intern(const char *s, size_t len) {
 }
 
 void init_symbols() {
-    dlb_hash_init(&symbol_table, "[symbol_table]", 20, 3);
+    dlb_hash_init(&symbol_table, "[symbol_table]", 32, 4);
     sym_entity = intern(CSTR("entity"));
     sym_int = intern(CSTR("int32"));
     sym_float  = intern(CSTR("float32"));

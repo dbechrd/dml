@@ -4,13 +4,15 @@
 #include "entity.h"
 
 typedef struct scene {
-    uint32_t uid;
+    const char *name;
+    uint32_t next_uid;
     entity *entities;
 } scene;
 
 void init_type_loaders();
 
-scene *scene_init();
+scene *scene_init(const char *name);
+void scene_free(scene *scn);
 void scene_save(scene *scn, file *entitydb);
 scene *scene_load(file *f);
-void scene_free(scene *scn);
+void scene_print(scene *scn);
