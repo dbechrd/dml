@@ -1,4 +1,5 @@
 #pragma once
+#include "helpers.h"
 #include "dlb_types.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,13 +24,20 @@ typedef struct file {
     file_mode mode;
     FILE *hnd;
     char last;
+    bool replay;
     size_t line_number;
     size_t line_column;
 } file;
 
 file *file_open(const char *filename, file_mode mode);
+int file_look_char(file *f, const char *chars, int times, bool required);
+void file_expect_string(file *f, const char *str);
 
-static inline char file_getc(file *f) {
+static inline char file_char(file *f) {
+    if (f->replay) {
+        f->replay = false;
+        return f->last;
+    }
     if (f->last == '\n') {
         f->line_number++;
         f->line_column = 0;
@@ -39,17 +47,26 @@ static inline char file_getc(file *f) {
     return f->last;
 }
 
-static inline void file_expect(file *f, char chr) {
-    char c = file_getc(f);
-    if (c != chr) {
-        fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Missing expected character '%c'\n",
-                f->filename, f->line_number, f->line_column, chr);
-        getchar();
-        exit(1);
-    }
+static inline char file_peek(file *f) {
+    char c = file_char(f);
+    f->replay = true;
+    return c;
 }
 
 static inline void file_close(file *f) {
     fclose(f->hnd);
     free(f);
+}
+
+static inline int file_expect_char(file *f, const char *chars, int times) {
+    int count = file_look_char(f, chars, times, true);
+    return count;
+}
+
+static inline int file_allow_char(file *f, const char *chars, int times) {
+    int count = file_look_char(f, chars, times, false);
+    //if (!count) {
+    //    f->replay = true;  // HACK: Seemed simpler than fseek...
+    //}
+    return count;
 }

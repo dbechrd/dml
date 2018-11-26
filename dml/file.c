@@ -17,6 +17,42 @@ file *file_open(const char *filename, file_mode mode) {
     return file;
 }
 
+int file_look_char(file *f, const char *chars, int times, bool required) {
+    DLB_ASSERT(times || !required);
+    int count = 0;
+    for (int i = 0; times == 0 || i < times; i++) {
+        char c = file_char(f);
+        char found = str_find_char(chars, c);
+        if (found) {
+            count++;
+        } else {
+            if (required) {
+                fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Missing expected character [%s]. Found %c instead.\n",
+                        f->filename, f->line_number, f->line_column, chars, c);
+                getchar();
+                exit(1);
+            }
+            f->replay = true;
+            break;
+        }
+    }
+    return count;
+}
+
+void file_expect_string(file *f, const char *str) {
+    const char *s = str;
+    while (*s) {
+        char c = file_char(f);
+        if (c != *s) {
+            fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Missing expected character %c of string %s. Found %c instead.\n",
+                    f->filename, f->line_number, f->line_column, *s, str, c);
+            getchar();
+            exit(1);
+        }
+        s++;
+    }
+}
+
 //char *file_read_all(file *f) {
 //    DLB_ASSERT(!fseek(f->hnd, 0, SEEK_END));
 //    long pos = ftell(f->hnd);

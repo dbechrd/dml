@@ -80,7 +80,6 @@ void tests() {
     float a = 123.0f;
     float b = parse_float("123.0f");
     float c = parse_float("0x42f60000");
-    print("123.0f");
     DLB_ASSERT(a == b);
     DLB_ASSERT(b == c);
 }

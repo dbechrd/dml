@@ -49,45 +49,53 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
     entity *e = entity_init(scn, uid);
 
     for (;;) {
-        char c = file_getc(f);
+        char c = file_char(f);
         switch(c) {
         case EOF: case '!':
+            f->replay = true;
             return;
         case '\n':
             continue;
         case ' ':
-            file_expect(f, ' ');
-            break;
+            continue;
+        case '#':
+            file_allow_char(f, CHAR_LITERAL, 0);
+            continue;
         default:
-            DLB_ASSERT(0); // wtf?
+            f->replay = true;
+            break;
         }
 
-        const char *name = read_string(f, ':', CHAR_PROP_IDENTIFIER);
+        const char *name = read_string(f, ":", CHAR_IDENTIFIER);
+        file_expect_char(f, ":", 1);
 
         size_t f_lineno = f->line_number;
         size_t f_column = f->line_column;
-        const char *type = read_string(f, ' ', CHAR_TYPE_IDENTIFIER);
-        file_expect(f, '=');
-        file_expect(f, ' ');
+        const char *type = read_string(f, CHAR_WHITESPACE, CHAR_TYPE);
+        file_allow_char(f, CHAR_WHITESPACE, 0);
+        file_expect_char(f, "=", 1);
+        file_allow_char(f, CHAR_WHITESPACE, 0);
 
         prop *p = prop_find_or_create(e, name);
         if (type == sym_int) {
             p->type = PROP_INT;
-            p->value.as_int = read_int(f, '\n');
+            p->value.as_int = read_int(f, CHAR_SEPARATOR);
         } else if (type == sym_float) {
             p->type = PROP_FLOAT;
-            p->value.as_float = read_float(f, '\n');
+            p->value.as_float = read_float(f, CHAR_SEPARATOR ":");
         } else if (type == sym_string) {
             p->type = PROP_STRING;
-            file_expect(f, '"');
-            p->value.as_string = read_string(f, '"', 0);
-            file_expect(f, '\n');
+            file_expect_char(f, CHAR_STRING_DELIM, 1);
+            p->value.as_string = read_string(f, CHAR_STRING_DELIM, CHAR_LITERAL);
+            file_expect_char(f, CHAR_STRING_DELIM, 1);
         } else {
-            fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Expected type identifier at line %d, column %d\n",
+            fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Expected type identifier at %d:%d\n",
                     f->filename, f->line_number, f->line_column, f_lineno, f_column);
             getchar();
             exit(1);
         }
+
+        DLB_ASSERT(1);
     }
 }
 

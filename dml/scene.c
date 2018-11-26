@@ -38,16 +38,19 @@ void scene_save(scene *scn, file *entitydb) {
 }
 
 scene *scene_load(file *f) {
-    const char *name = read_string(f, '\n', CHAR_SCENE_NAME);
+    const char *name = read_string(f, CHAR_EOL, CHAR_LITERAL);
+    file_expect_char(f, CHAR_EOL, 1);
     scene *scn = scene_init(name);
-    file_getc(f);
     for (;;) {
-        switch(f->last) {
+        char c = file_char(f);
+        switch(c) {
         case EOF:
             goto end;
         case '!': {
-            unsigned int uid = read_uint(f, ':');
-            const char *type = read_string(f, '\n', CHAR_TYPE_IDENTIFIER);
+            unsigned int uid = read_uint(f, ":");
+            file_expect_char(f, ":", 1);
+            const char *type = read_string(f, CHAR_EOL, CHAR_TYPE);
+            file_expect_char(f, CHAR_EOL, 1);
 
             // TODO: Register type names in lookup table that maps them to their
             //       respective loader

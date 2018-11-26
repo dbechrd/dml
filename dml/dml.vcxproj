@@ -127,6 +127,7 @@
   <ItemGroup>
     <ClInclude Include="entity.h" />
     <ClInclude Include="file.h" />
+    <ClInclude Include="helpers.h" />
     <ClInclude Include="parse.h" />
     <ClInclude Include="prop.h" />
     <ClInclude Include="scene.h" />
