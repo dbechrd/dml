@@ -21,13 +21,14 @@
 
 #define CHAR_STRING_DELIM   "\""
 #define CHAR_COMMENT        "#"
-#define CHAR_WHITESPACE     " "
+#define CHAR_WHITESPACE     " \t"
 #define CHAR_EOL            "\n"
 
-#define CHAR_IDENTIFIER     CHAR_ALPHA_LOWER
-#define CHAR_TYPE           CHAR_ALPHA_LOWER CHAR_DIGIT
-#define CHAR_LITERAL        CHAR_ALPHA_NUM CHAR_SPECIAL CHAR_WHITESPACE
-#define CHAR_SEPARATOR      CHAR_WHITESPACE CHAR_EOL
+#define CHAR_IDENTIFIER_START   CHAR_ALPHA_LOWER
+#define CHAR_IDENTIFIER         CHAR_ALPHA_LOWER CHAR_DIGIT "_"
+#define CHAR_TYPE               CHAR_ALPHA_LOWER CHAR_DIGIT
+#define CHAR_LITERAL            CHAR_ALPHA_NUM CHAR_SPECIAL CHAR_WHITESPACE
+#define CHAR_SEPARATOR          CHAR_WHITESPACE CHAR_EOL
 
 char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
                const char *delims, const char *valid_chars);

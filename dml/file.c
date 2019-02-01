@@ -27,7 +27,7 @@ int file_look_char(file *f, const char *chars, int times, bool required) {
             count++;
         } else {
             if (required) {
-                fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Missing expected character [%s]. Found %c instead.\n",
+                fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Missing expected character [%s]. Found '%c' instead.\n",
                         f->filename, f->line_number, f->line_column, chars, c);
                 getchar();
                 exit(1);

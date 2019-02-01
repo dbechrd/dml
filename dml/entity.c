@@ -56,7 +56,7 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
             return;
         case '\n':
             continue;
-        case ' ':
+        case ' ': case '\t':
             continue;
         case '#':
             file_allow_char(f, CHAR_LITERAL, 0);
@@ -66,6 +66,8 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
             break;
         }
 
+        file_expect_char(f, CHAR_IDENTIFIER_START, 1);
+        f->replay = true;
         const char *name = read_string(f, ":", CHAR_IDENTIFIER);
         file_expect_char(f, ":", 1);
 

@@ -25,8 +25,8 @@ char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
         // Validate character
         char valid = str_find_char(valid_chars, c);
         if (valid_chars && !valid) {
-            fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Unexpected character '%c' in expression starting at %d:%d. Expected [%s] or delimeter '%c'.\n",
-                    f->filename, f->line_number, f->line_column, c, f_lineno, f_column, valid_chars, delim);
+            fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Unexpected character '%c' in expression starting at %d:%d. Expected [%s] or delimeter '[%s]'.\n",
+                    f->filename, f->line_number, f->line_column, c, f_lineno, f_column, valid_chars, delims);
             getchar();
             exit(1);
         }
