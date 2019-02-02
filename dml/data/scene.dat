@@ -2,9 +2,13 @@ test scene
 !1:entity
   name:string = "Timmy"
   age:int32 = 42
-  weight1:float32 = 123.000000				# This should be 123.000000
-  weight2:float32 = 123.000000:0x42f60000	# This should be 123.000000
+  weight:float32 = 123.000000:0x42f60000
   height:string = "5ft 6in"
   city:string = "San Francisco"
 !2:entity
   name:string = "Bobby"
+  age:int32 = 24
+  weight1:float32 = 321.000000
+  weight2:float32 = 321.000000:0x43a08000
+  height:string = "6ft 5in"
+  city:string = "Fran Sansisco"

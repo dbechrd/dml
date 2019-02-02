@@ -19,7 +19,8 @@ void entity_print(FILE *f, entity *e) {
             fprintf(f, " = %d", prop->value.as_int);
             break;
         case PROP_FLOAT:
-            fprintf(f, " = 0x%x  # %f", *(unsigned *)&prop->value.as_float, prop->value.as_float);
+            fprintf(f, " = %f:0x%x", prop->value.as_float,
+                    *(unsigned *)&prop->value.as_float);
             break;
         case PROP_STRING:
             fprintf(f, " = \"%s\"", prop->value.as_string);
@@ -91,10 +92,8 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
             p->value.as_string = read_string(f, CHAR_STRING_DELIM, CHAR_LITERAL);
             file_expect_char(f, CHAR_STRING_DELIM, 1);
         } else {
-            fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Expected type identifier at %d:%d\n",
-                    f->filename, f->line_number, f->line_column, f_lineno, f_column);
-            getchar();
-            exit(1);
+            PANIC_FILE(f, "[PARSE_ERROR] Expected type identifier at %d:%d\n",
+                       f_lineno, f_column);
         }
 
         DLB_ASSERT(1);

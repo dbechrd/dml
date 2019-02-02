@@ -5,8 +5,7 @@ file *file_open(const char *filename, file_mode mode) {
     FILE *hnd = fopen(filename, file_mode_str(mode));
     if (!hnd) {
         perror("fopen error");
-        fprintf(stderr, "Failed to open file: %s\n", filename);
-        exit(1);
+        PANIC("Failed to open file: %s\n", filename);
     }
     file *file = dlb_calloc(1, sizeof(*file));
     file->filename = filename;
@@ -27,10 +26,7 @@ int file_look_char(file *f, const char *chars, int times, bool required) {
             count++;
         } else {
             if (required) {
-                fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Missing expected character [%s]. Found '%c' instead.\n",
-                        f->filename, f->line_number, f->line_column, chars, c);
-                getchar();
-                exit(1);
+                PANIC_FILE(f, "[PARSE_ERROR] Missing expected character [%s]. Found '%c' instead.\n", chars, c);
             }
             f->replay = true;
             break;
@@ -44,10 +40,7 @@ void file_expect_string(file *f, const char *str) {
     while (*s) {
         char c = file_char(f);
         if (c != *s) {
-            fprintf(stderr, "%s:%d:%d [PARSE_ERROR] Missing expected character %c of string %s. Found %c instead.\n",
-                    f->filename, f->line_number, f->line_column, *s, str, c);
-            getchar();
-            exit(1);
+            PANIC_FILE(f, "[PARSE_ERROR] Missing expected character %c of string %s. Found %c instead.\n", *s, str, c);
         }
         s++;
     }

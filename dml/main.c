@@ -68,7 +68,6 @@ int main(int argc, char *argv[]) {
     read_scene(filename);
 
     printf("fin.");
-    getchar();
     return 0;
 }
 

@@ -20,7 +20,7 @@ const char *intern(const char *s, size_t len) {
     if (sym) return sym;
 
     sym = dlb_symbol_alloc(s, len);
-    dlb_hash_insert(&symbol_table, s, len, sym);
+    dlb_hash_insert(&symbol_table, sym, len, sym);
     return sym;
 }
 
