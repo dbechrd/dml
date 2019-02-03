@@ -30,15 +30,6 @@ char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
                        c, pos_start.line, pos_start.column, valid_chars, delims);
         }
 
-        // Discard end-of-line whitespace and comments
-        //if (delim == '\n' && (c == ' ' || c == '#')) {
-        //    if (len) *len = i;
-        //    while (c != '\n') {
-        //        c = file_char(f);
-        //    }
-        //    return;
-        //}
-
         buf[i] = c;
     }
 
