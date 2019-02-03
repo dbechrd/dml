@@ -19,6 +19,7 @@ const char *sym_string;
 const char *sym_vec3;
 
 const char *intern(const char *s, size_t len) {
+    DLB_ASSERT(len);
     DLB_ASSERT(len < SYM_MAX_LEN);
 
     char *sym = dlb_hash_search(&symbol_table, s, len);

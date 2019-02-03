@@ -19,10 +19,10 @@
 #define CHAR_SPECIAL            "`~!@#$%^&*()-_=+[{]}\\|;:,<.>/?"
 //#define CHAR_ESCAPE         "\t\"\r\n"
 
-#define CHAR_CHAR_DELIM         "\'"
+#define CHAR_CHAR_DELIM         "'"
 #define CHAR_STRING_DELIM       "\""
 #define CHAR_COMMENT            "#"
-#define CHAR_WHITESPACE         " \t"
+#define CHAR_WHITESPACE         " \t\n"
 #define CHAR_EOL                "\n"
 #define CHAR_ARRAY_LEN_START    "["
 #define CHAR_ARRAY_LEN_END      "]"
@@ -32,7 +32,7 @@
 #define CHAR_IDENTIFIER_START   CHAR_ALPHA_LOWER
 #define CHAR_IDENTIFIER         CHAR_ALPHA_LOWER CHAR_DIGIT "_"
 #define CHAR_TYPE               CHAR_ALPHA_LOWER CHAR_DIGIT
-#define CHAR_CHAR_LITERAL       CHAR_ALPHA_NUM CHAR_SPECIAL CHAR_WHITESPACE
+#define CHAR_CHAR_LITERAL       CHAR_ALPHA_NUM CHAR_SPECIAL " "
 #define CHAR_STRING_LITERAL     CHAR_ALPHA_NUM CHAR_SPECIAL CHAR_WHITESPACE "'"
 #define CHAR_SEPARATOR          CHAR_WHITESPACE CHAR_EOL
 

@@ -57,20 +57,6 @@ void read_scene(const char *filename) {
     scene_free(scene);
 }
 
-void tests();
-int main(int argc, char *argv[]) {
-    tests();
-    init_symbols();
-    init_type_loaders();
-
-    const char *filename = "data/scene.dat";
-    //write_scene(filename);
-    read_scene(filename);
-
-    printf("fin.");
-    return 0;
-}
-
 void print(char *blah) {
     float bleh = parse_float(blah);
     printf("%s = %f [0x%x]\n", blah, bleh, *(unsigned *)&bleh);
@@ -81,4 +67,22 @@ void tests() {
     float c = parse_float("0x42f60000");
     DLB_ASSERT(a == b);
     DLB_ASSERT(b == c);
+}
+
+DLB_ASSERT_HANDLER(assert_handler) {
+    PANIC("%s:%d [ASSERT FAILED] %s", filename, line, expr);
+}
+
+int main(int argc, char *argv[]) {
+    DLB_assert_handler = assert_handler;
+    tests();
+    init_symbols();
+    init_type_loaders();
+
+    const char *filename = "data/scene.dat";
+    //write_scene(filename);
+    read_scene(filename);
+
+    printf("fin.");
+    return 0;
 }

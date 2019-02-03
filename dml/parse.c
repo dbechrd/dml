@@ -8,8 +8,8 @@
 char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
                const char *delims, const char *valid_chars) {
     DLB_ASSERT(valid_chars);
-    size_t f_lineno = f->pos.line;
-    size_t f_column = f->pos.column + 1;
+    file_pos pos_start = f->pos;
+    pos_start.column += 1;
 
     char delim = 0;
     size_t i;
@@ -27,7 +27,7 @@ char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
         char valid = str_find_char(valid_chars, c);
         if (valid_chars && !valid) {
             PANIC_FILE(f, "[PARSE_ERROR] Unexpected character '%c' in expression starting at %d:%d. Expected [%s] or delimeter '[%s]'.\n",
-                       c, f_lineno, f_column, valid_chars, delims);
+                       c, pos_start.line, pos_start.column, valid_chars, delims);
         }
 
         // Discard end-of-line whitespace and comments
@@ -44,7 +44,7 @@ char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
 
     if (delims && !delim) {
         PANIC_FILE(f, "[PARSE_ERROR] Expected delim [%s] to end expression starting at %d:%d\n",
-                   delims, f_lineno, f_column);
+                   delims, pos_start.line, pos_start.column);
     }
 
     if (len) *len = i;
@@ -122,9 +122,8 @@ float parse_float(char *buf) {
 }
 
 char read_char(file *f, const char *delims, const char *valid_chars) {
-    char chr = 0;
-    eat_chars(&chr, 1, NULL, f, delims, valid_chars);
-    return chr;
+    char c = file_char(f);
+    return c;
 }
 
 const char *read_string(file *f, const char *delims, const char *valid_chars) {

@@ -10,7 +10,7 @@
 void entity_print(FILE *f, entity *e) {
     fprintf(f, "!%d:entity\n", e->uid);
     for (prop *prop = e->properties; prop != dlb_vec_end(e->properties); prop++) {
-        fprintf(f, "  %s:", prop->name);
+        fprintf(f, "  %s: ", prop->name);
         if (prop->type_alias == NULL) {
             fprintf(f, "%s", prop_type_str(prop->type));
             if (prop->length > 0 && prop->type != PROP_STRING) {
@@ -27,7 +27,7 @@ void entity_print(FILE *f, entity *e) {
             } else {
                 fprintf(f, CHAR_ARRAY_START);
                 for (size_t i = 0; i < prop->length; i++) {
-                    fprintf(f, "%d", prop->value.as_int);
+                    fprintf(f, "%d", prop->value.int_array[i]);
                     if (i < prop->length - 1) {
                         fprintf(f, ", ");
                     }
@@ -42,8 +42,8 @@ void entity_print(FILE *f, entity *e) {
             } else {
                 fprintf(f, CHAR_ARRAY_START);
                 for (size_t i = 0; i < prop->length; i++) {
-                    fprintf(f, "%f:0x%x", prop->value.as_float,
-                            *(unsigned *)&prop->value.as_float);
+                    fprintf(f, "%f:0x%x", prop->value.float_array[i],
+                            *(unsigned *)&prop->value.float_array[i]);
                     if (i < prop->length - 1) {
                         fprintf(f, ", ");
                     }
@@ -57,7 +57,7 @@ void entity_print(FILE *f, entity *e) {
             } else {
                 fprintf(f, CHAR_ARRAY_START);
                 for (size_t i = 0; i < prop->length; i++) {
-                    fprintf(f, "'%c'", prop->value.as_char);
+                    fprintf(f, "'%c'", prop->value.char_array[i]);
                     if (i < prop->length - 1) {
                         fprintf(f, ", ");
                     }
@@ -115,12 +115,17 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
         f->replay = true;
         const char *name = read_string(f, ":", CHAR_IDENTIFIER);
         file_expect_char(f, ":", 1);
+        file_allow_char(f, CHAR_WHITESPACE, 0);
 
         file_pos pos_type = f->pos;
         const char *type = read_string(f, CHAR_WHITESPACE CHAR_ARRAY_LEN_START, CHAR_TYPE);
-        size_t arr_len = 0;
+        bool is_array = false;
+        size_t array_len = 0;
         if (file_allow_char(f, CHAR_ARRAY_LEN_START, 1)) {
-            arr_len = read_uint(f, CHAR_ARRAY_LEN_END);
+            is_array = true;
+            if (!str_find_char(CHAR_ARRAY_LEN_END, file_peek(f))) {
+                array_len = read_uint(f, CHAR_ARRAY_LEN_END);
+            }
             file_expect_char(f, CHAR_ARRAY_LEN_END, 1);
         }
         file_allow_char(f, CHAR_WHITESPACE, 0);
@@ -131,86 +136,117 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
         if (p) {
             if (type == sym_int) {
                 p->type = PROP_INT;
-                if (arr_len == 0) {
-                    p->value.as_int = read_int(f, CHAR_SEPARATOR);
-                } else {
+                if (is_array) {
                     file_expect_char(f, CHAR_ARRAY_START, 1);
                     file_allow_char(f, CHAR_WHITESPACE, 0);
-                    p->length = arr_len;
-                    p->value.int_array = calloc(p->length, sizeof(*p->value.int_array));
+                    if (array_len > 0) {
+                        p->length = array_len;
+                        dlb_vec_reserve(p->value.int_array, p->length);
+                    } else {
+                        p->length = SIZE_MAX;
+                        dlb_vec_alloc(p->value.int_array);
+                    }
                     for (size_t i = 0; i < p->length; i++) {
                         p->value.int_array[i] = read_int(f, CHAR_SEPARATOR ":" ",");
                         file_allow_char(f, CHAR_WHITESPACE, 0);
-                        if (i < p->length - 1) {
+                        if (p->length != SIZE_MAX && i < p->length - 1) {
                             file_expect_char(f, ",", 1);
                         } else {
                             file_allow_char(f, ",", 1);
                         }
                         file_allow_char(f, CHAR_WHITESPACE, 0);
+                        if (p->length == SIZE_MAX &&
+                            str_find_char(CHAR_ARRAY_END, file_peek(f))) {
+                            p->length = i + 1;
+                            break;
+                        }
                     }
                     file_expect_char(f, CHAR_ARRAY_END, 1);
+                } else {
+                    p->value.as_int = read_int(f, CHAR_SEPARATOR);
                 }
             } else if (type == sym_float) {
                 p->type = PROP_FLOAT;
-                if (arr_len == 0) {
-                    p->value.as_float = read_float(f, CHAR_SEPARATOR ":");
-                } else {
+                if (is_array) {
                     file_expect_char(f, CHAR_ARRAY_START, 1);
                     file_allow_char(f, CHAR_WHITESPACE, 0);
-                    p->length = arr_len;
-                    p->value.float_array = calloc(p->length, sizeof(*p->value.float_array));
+                    if (array_len > 0) {
+                        p->length = array_len;
+                        dlb_vec_reserve(p->value.float_array, p->length);
+                    } else {
+                        p->length = SIZE_MAX;
+                        dlb_vec_alloc(p->value.int_array);
+                    }
                     for (size_t i = 0; i < p->length; i++) {
                         p->value.float_array[i] = read_float(f, CHAR_SEPARATOR ":" ",");
                         file_allow_char(f, CHAR_WHITESPACE, 0);
-                        if (i < p->length - 1) {
-                            file_expect_char(f, ",", 1);
+                        if (p->length != SIZE_MAX && i < p->length - 1) {
+                                file_expect_char(f, ",", 1);
                         } else {
                             file_allow_char(f, ",", 1);
                         }
                         file_allow_char(f, CHAR_WHITESPACE, 0);
+                        if (p->length == SIZE_MAX &&
+                            str_find_char(CHAR_ARRAY_END, file_peek(f))) {
+                            p->length = i + 1;
+                            break;
+                        }
                     }
                     file_expect_char(f, CHAR_ARRAY_END, 1);
+                } else {
+                    p->value.as_float = read_float(f, CHAR_SEPARATOR ":");
                 }
             } else if (type == sym_char) {
                 p->type = PROP_CHAR;
-                if (arr_len == 0) {
-                    file_expect_char(f, CHAR_CHAR_DELIM, 1);
-                    p->value.as_char = read_char(f, CHAR_CHAR_DELIM, CHAR_CHAR_LITERAL);
-                    file_expect_char(f, CHAR_CHAR_DELIM, 1);
-                } else {
+                if (is_array) {
                     file_expect_char(f, CHAR_ARRAY_START, 1);
                     file_allow_char(f, CHAR_WHITESPACE, 0);
-                    p->length = arr_len;
-                    p->value.char_array = calloc(p->length, sizeof(*p->value.char_array));
+                    if (array_len > 0) {
+                        p->length = array_len;
+                        dlb_vec_reserve(p->value.char_array, p->length);
+                    } else {
+                        p->length = SIZE_MAX;
+                        dlb_vec_alloc(p->value.int_array);
+                    }
                     for (size_t i = 0; i < p->length; i++) {
                         file_expect_char(f, CHAR_CHAR_DELIM, 1);
                         p->value.char_array[i] = read_char(f, CHAR_CHAR_DELIM, CHAR_CHAR_LITERAL);
                         file_expect_char(f, CHAR_CHAR_DELIM, 1);
 
                         file_allow_char(f, CHAR_WHITESPACE, 0);
-                        if (i < p->length - 1) {
+                        if (p->length != SIZE_MAX && i < p->length - 1) {
                             file_expect_char(f, ",", 1);
                         } else {
                             file_allow_char(f, ",", 1);
                         }
                         file_allow_char(f, CHAR_WHITESPACE, 0);
+                        if (p->length == SIZE_MAX &&
+                            str_find_char(CHAR_ARRAY_END, file_peek(f))) {
+                            p->length = i + 1;
+                            break;
+                        }
                     }
                     file_expect_char(f, CHAR_ARRAY_END, 1);
+                } else {
+                    file_expect_char(f, CHAR_CHAR_DELIM, 1);
+                    p->value.as_char = read_char(f, CHAR_CHAR_DELIM, CHAR_CHAR_LITERAL);
+                    file_expect_char(f, CHAR_CHAR_DELIM, 1);
                 }
-
             } else if (type == sym_string) {
+                DLB_ASSERT(!is_array);  // TODO: Handle arrays of strings?
                 file_expect_char(f, CHAR_STRING_DELIM, 1);
                 p->type = PROP_STRING;
                 p->value.string = read_string(f, CHAR_STRING_DELIM, CHAR_STRING_LITERAL);
                 p->length = dlb_symbol_len(p->value.string);
                 file_expect_char(f, CHAR_STRING_DELIM, 1);
             } else if (type == sym_vec3) {
+                DLB_ASSERT(!is_array);  // TODO: Handle arrays of vec3?
                 file_expect_char(f, CHAR_ARRAY_START, 1);
                 file_allow_char(f, CHAR_WHITESPACE, 0);
                 p->type = PROP_FLOAT;
                 p->type_alias = sym_vec3;
                 p->length = 3;
-                p->value.float_array = calloc(p->length, sizeof(*p->value.float_array));
+                dlb_vec_reserve(p->value.float_array, p->length);
                 for (size_t i = 0; i < p->length; i++) {
                     p->value.float_array[i] = read_float(f, CHAR_SEPARATOR ":" ",");
                     file_allow_char(f, CHAR_WHITESPACE, 0);
@@ -238,7 +274,7 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
 void entity_free(entity *e) {
     for (prop *prop = e->properties; prop != dlb_vec_end(e->properties); prop++) {
         if (prop->length > 0 && prop->type != PROP_STRING) {
-            free(prop->value.buffer);
+            dlb_vec_free(prop->value.buffer);
         }
     }
     dlb_vec_free(e->properties);

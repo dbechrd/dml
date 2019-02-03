@@ -1,16 +1,28 @@
 test scene
 !1:entity
-  name:string = "Timmy"
-  age:int32 = 42
-  weight:float32 = 123.000000:0x42f60000
-  height:string = "5ft 6in"
-  city:string = "San Francisco"
+  name: string = "Timmy"
+  age: int32 = 42
+  weight: float32 = 123.000000:0x42f60000
+  height: string = "5ft 6in"
+  city: string = "San Francisco"
 !2:entity
-  name:string = "Bobby"
-  age:int32 = 24
-  weight1:float32 = 321.000000
-  weight2:float32 = 321.000000:0x43a08000
-  height:string = "2.86 meters"
-  city:string = "New York"
-  position1:vec3 = { 0.001, 0.002, 0.003 }
-  position2:float32[3] = { 0.001, 0.002, 0.003 }
+  name: string = "Bobby"
+  age: int32 = 24
+  weight1: float32 = 321.000000
+  weight2: float32 = 321.000000:0x43a08000
+  height: string = "2.86 meters"
+  city: string = "New York"
+  position1: vec3 = {
+    1.001,
+    2.002,
+    3.003,
+  }
+  char_array_fixed: char[4] = { 't', 'e', 's', 't' }
+  char_array_dyn: char[] = {
+    't', 'h', 'i', 's',
+    'i', 's',
+    'a',
+    't', 'e', 's', 't',
+    'a', 'r', 'r', 'a', 'y',
+  }
+  position2: float32[3] = { 0.001, 0.002, 0.003 }
