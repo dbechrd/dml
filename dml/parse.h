@@ -34,6 +34,7 @@
 #define CHAR_TYPE               CHAR_ALPHA_LOWER CHAR_DIGIT
 #define CHAR_CHAR_LITERAL       CHAR_ALPHA_NUM CHAR_SPECIAL " "
 #define CHAR_STRING_LITERAL     CHAR_ALPHA_NUM CHAR_SPECIAL CHAR_WHITESPACE "'"
+#define CHAR_COMMENT_LITERAL     CHAR_ALPHA_NUM CHAR_SPECIAL " \t'\""
 #define CHAR_SEPARATOR          CHAR_WHITESPACE CHAR_EOL
 
 char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,

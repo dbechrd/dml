@@ -108,12 +108,10 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
         case EOF: case '!':
             f->replay = true;
             return;
-        case '\n':
-            continue;
-        case ' ': case '\t':
+        case ' ': case '\t': case '\n':
             continue;
         case '#':
-            file_allow_char(f, CHAR_STRING_LITERAL, 0);
+            file_allow_char(f, CHAR_COMMENT_LITERAL, 0);
             continue;
         default:
             f->replay = true;
