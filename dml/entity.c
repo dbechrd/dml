@@ -25,14 +25,14 @@ void entity_print(FILE *f, entity *e) {
             if (prop->length == 0) {
                 fprintf(f, "%d", prop->value.as_int);
             } else {
-                fprintf(f, CHAR_ARRAY_START);
+                fprintf(f, CHAR_ARRAY_START " ");
                 for (size_t i = 0; i < prop->length; i++) {
                     fprintf(f, "%d", prop->value.int_array[i]);
                     if (i < prop->length - 1) {
                         fprintf(f, ", ");
                     }
                 }
-                fprintf(f, CHAR_ARRAY_END);
+                fprintf(f, " " CHAR_ARRAY_END);
             }
             break;
         case PROP_FLOAT:
@@ -40,7 +40,7 @@ void entity_print(FILE *f, entity *e) {
                 fprintf(f, "%f:0x%x", prop->value.as_float,
                         *(unsigned *)&prop->value.as_float);
             } else {
-                fprintf(f, CHAR_ARRAY_START);
+                fprintf(f, CHAR_ARRAY_START " ");
                 for (size_t i = 0; i < prop->length; i++) {
                     fprintf(f, "%f:0x%x", prop->value.float_array[i],
                             *(unsigned *)&prop->value.float_array[i]);
@@ -48,21 +48,21 @@ void entity_print(FILE *f, entity *e) {
                         fprintf(f, ", ");
                     }
                 }
-                fprintf(f, CHAR_ARRAY_END);
+                fprintf(f, " " CHAR_ARRAY_END);
             }
             break;
         case PROP_CHAR:
             if (prop->length == 0) {
                 fprintf(f, "'%c'", prop->value.as_char);
             } else {
-                fprintf(f, CHAR_ARRAY_START);
+                fprintf(f, CHAR_ARRAY_START " ");
                 for (size_t i = 0; i < prop->length; i++) {
                     fprintf(f, "'%c'", prop->value.char_array[i]);
                     if (i < prop->length - 1) {
                         fprintf(f, ", ");
                     }
                 }
-                fprintf(f, CHAR_ARRAY_END);
+                fprintf(f, " " CHAR_ARRAY_END);
             }
             break;
         case PROP_STRING:
