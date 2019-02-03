@@ -8,8 +8,8 @@
 char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
                const char *delims, const char *valid_chars) {
     DLB_ASSERT(valid_chars);
-    size_t f_lineno = f->line_number;
-    size_t f_column = f->line_column + 1;
+    size_t f_lineno = f->pos.line;
+    size_t f_column = f->pos.column + 1;
 
     char delim = 0;
     size_t i;
@@ -99,7 +99,7 @@ float read_float(file *f, const char *delims) {
         eat_chars(hex_buf, FLOAT_HEX_LEN, 0, f, 0, CHAR_HEX);
 
         float hex_value = parse_float_hex(hex_buf);
-        float delta = fabs(hex_value - value);
+        float delta = fabsf(hex_value - value);
         if (delta < FLOAT_HEX_MAX_DELTA) {
             value = hex_value;
         } else {
@@ -119,6 +119,12 @@ float parse_float(char *buf) {
         value = strtof(buf, 0);
     }
     return value;
+}
+
+char read_char(file *f, const char *delims, const char *valid_chars) {
+    char chr = 0;
+    eat_chars(&chr, 1, NULL, f, delims, valid_chars);
+    return chr;
 }
 
 const char *read_string(file *f, const char *delims, const char *valid_chars) {

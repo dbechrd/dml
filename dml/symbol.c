@@ -6,12 +6,17 @@
 
 #define SYM_MAX_LEN 256
 
+// TODO: It may be useful to have multiple symbol tables to allow freeing
+//       symbols that are no longer in use (e.g. table per scene file). This
+//       hasn't been necessary yet, so I'm not going to do it preemptively.
 static struct dlb_hash symbol_table;
 
 const char *sym_entity;
 const char *sym_int;
 const char *sym_float;
+const char *sym_char;
 const char *sym_string;
+const char *sym_vec3;
 
 const char *intern(const char *s, size_t len) {
     DLB_ASSERT(len < SYM_MAX_LEN);
@@ -29,5 +34,7 @@ void init_symbols() {
     sym_entity = intern(CSTR("entity"));
     sym_int = intern(CSTR("int32"));
     sym_float  = intern(CSTR("float32"));
+    sym_char = intern(CSTR("char"));
     sym_string = intern(CSTR("string"));
+    sym_vec3 = intern(CSTR("vec3"));
 }

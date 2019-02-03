@@ -19,14 +19,18 @@ static inline const char *file_mode_str(file_mode mode) {
     return str;
 }
 
+typedef struct file_pos {
+    size_t line;
+    size_t column;
+} file_pos;
+
 typedef struct file {
     const char *filename;
     file_mode mode;
     FILE *hnd;
     char last;
     bool replay;
-    size_t line_number;
-    size_t line_column;
+    file_pos pos;
 } file;
 
 file *file_open(const char *filename, file_mode mode);
@@ -39,10 +43,10 @@ static inline char file_char(file *f) {
         return f->last;
     }
     if (f->last == '\n') {
-        f->line_number++;
-        f->line_column = 0;
+        f->pos.line++;
+        f->pos.column = 0;
     }
-    f->line_column++;
+    f->pos.column++;
     f->last = fgetc(f->hnd);
     return f->last;
 }

@@ -10,5 +10,7 @@ test scene
   age:int32 = 24
   weight1:float32 = 321.000000
   weight2:float32 = 321.000000:0x43a08000
-  height:string = "6ft 5in"
-  city:string = "Fran Sansisco"
+  height:string = "2.86 meters"
+  city:string = "New York"
+  position1:vec3 = { 0.001, 0.002, 0.003 }
+  position2:float32[3] = { 0.001, 0.002, 0.003 }

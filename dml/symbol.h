@@ -9,7 +9,9 @@
 extern const char *sym_entity;
 extern const char *sym_int;
 extern const char *sym_float;
+extern const char *sym_char;
 extern const char *sym_string;
+extern const char *sym_vec3;
 
 const char *intern(const char *s, size_t len);
 void init_symbols();

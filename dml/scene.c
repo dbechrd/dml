@@ -38,7 +38,7 @@ void scene_save(scene *scn, file *entitydb) {
 }
 
 scene *scene_load(file *f) {
-    const char *name = read_string(f, CHAR_EOL, CHAR_LITERAL);
+    const char *name = read_string(f, CHAR_EOL, CHAR_STRING_LITERAL);
     file_expect_char(f, CHAR_EOL, 1);
     scene *scn = scene_init(name);
     for (;;) {
@@ -52,8 +52,8 @@ scene *scene_load(file *f) {
             const char *type = read_string(f, CHAR_EOL, CHAR_TYPE);
             file_expect_char(f, CHAR_EOL, 1);
 
-            // TODO: Register type names in lookup table that maps them to their
-            //       respective loader
+            // TODO: Register type names (e.g. entity) in lookup table that maps
+            //       them to their respective loader
             if (type == sym_entity) {
                 entity_load(scn, uid, f);
             } else {
@@ -71,11 +71,8 @@ end:
 
 void scene_print(scene *scn) {
     // Print loaded entities
-    printf("-- Scene ----------------------------\n");
     printf("name: %s\n", scn->name);
-    printf("-- Entities -------------------------\n");
     for (entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
         entity_print(stdout, e);
     }
-    printf("-------------------------------------\n");
 }
