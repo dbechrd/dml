@@ -6,6 +6,25 @@
 #include "parse.h"
 #include "dlb_types.h"
 #include "dlb_vector.h"
+#include "ctype.h"
+
+const char *char_printable(const char *c) {
+    // HACK: Static buffer, don't hold pointers to this
+    static char buf[2] = { 0 };
+    if (isprint(*c)) {
+        buf[0] = *c;
+        return buf;
+    }
+
+    switch (*c) {
+    case '\t': return "\\t";
+    case '\r': return "\\r";
+    case '\n': return "\\n";
+    case '\0': return "\\0";
+    default:
+        return "?";
+    }
+}
 
 void entity_print(FILE *f, entity *e) {
     fprintf(f, "!%d:entity\n", e->uid);
@@ -14,13 +33,13 @@ void entity_print(FILE *f, entity *e) {
         if (prop->type_alias == NULL) {
             fprintf(f, "%s", prop_type_str(prop->type));
             if (prop->length > 0 && prop->type != PROP_STRING) {
-                fprintf(f, CHAR_ARRAY_LEN_START "%d" CHAR_ARRAY_LEN_END, prop->length);
+                fprintf(f, CHAR_ARRAY_LEN_START "%d" CHAR_ARRAY_LEN_END, (int)prop->length);
             }
         } else {
             fprintf(f, "%s", prop->type_alias);
         }
         fprintf(f, " = ");
-        switch(prop->type) {
+        switch (prop->type) {
         case PROP_INT:
             if (prop->length == 0) {
                 fprintf(f, "%d", prop->value.as_int);
@@ -59,11 +78,11 @@ void entity_print(FILE *f, entity *e) {
             break;
         case PROP_CHAR:
             if (prop->length == 0) {
-                fprintf(f, "'%c'", prop->value.as_char);
+                fprintf(f, "'%s'", char_printable(&prop->value.as_char));
             } else {
                 fprintf(f, CHAR_ARRAY_START "\n    ");
                 for (size_t i = 0; i < prop->length; i++) {
-                    fprintf(f, "'%c'", prop->value.char_array[i]);
+                    fprintf(f, "'%s'", char_printable(&prop->value.char_array[i]));
                     if (i == prop->length - 1) {
                         fprintf(f, "\n");
                     } else if ((i + 1) % 8) {
@@ -76,7 +95,7 @@ void entity_print(FILE *f, entity *e) {
             }
             break;
         case PROP_STRING:
-            fprintf(f, "\"%.*s\"", prop->length, prop->value.string);
+            fprintf(f, "\"%.*s\"", (int)prop->length, prop->value.string);
             break;
         default:
             DLB_ASSERT(0);
@@ -108,7 +127,7 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
         case EOF: case '!':
             f->replay = true;
             return;
-        case ' ': case '\t': case '\n':
+        case ' ': case '\t': case '\r': case '\n':
             continue;
         case '#':
             file_allow_char(f, CHAR_COMMENT_LITERAL, 0);
@@ -268,11 +287,11 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
                 file_expect_char(f, CHAR_ARRAY_END, 1);
             } else {
                 PANIC_FILE(f, "[PARSE_ERROR] Expected type identifier at %d:%d\n",
-                           pos_type.line, pos_type.column);
+                           (int)pos_type.line, (int)pos_type.column);
             }
         } else {
             PANIC_FILE(f, "[PARSE_ERROR] Redefinition of identifier '%s' at %d:%d\n",
-                       name, pos_identifier.line, pos_identifier.column);
+                       name, (int)pos_identifier.line, (int)pos_identifier.column);
         }
 
         DLB_ASSERT(1);

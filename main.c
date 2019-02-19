@@ -16,6 +16,7 @@
 #define DLB_VECTOR_IMPLEMENTATION
 #include "dlb_vector.h"
 #define DLB_HASH_IMPLEMENTATION
+#define DLB_HASH_TEST
 #include "dlb_hash.h"
 #define DLB_ARENA_IMPLEMENTATION
 #include "dlb_arena.h"
@@ -36,7 +37,7 @@ void write_scene(const char *filename) {
     entity_create(scene, "Timmy", 42, 123.0f, "5ft 6in", "San Francisco");
     entity_create(scene, "Bobby", 24, 321.0f, "6ft 5in", "Fran Sansisco");
 
-    printf("WRITE:\n");
+    printf("[WRITE: %s]\n", filename);
     scene_print(scene);
     printf("\n");
 
@@ -51,7 +52,7 @@ void read_scene(const char *filename) {
     scene *scene = scene_load(data_file);
     file_close(data_file);
 
-    printf("READ:\n");
+    printf("[READ %s]\n", filename);
     scene_print(scene);
     printf("\n");
     scene_free(scene);
@@ -61,12 +62,19 @@ void print(char *blah) {
     float bleh = parse_float(blah);
     printf("%s = %f [0x%x]\n", blah, bleh, *(unsigned *)&bleh);
 }
-void tests() {
+
+void test_float_parse()
+{
     float a = 123.0f;
     float b = parse_float("123.0f");
     float c = parse_float("0x42f60000");
     DLB_ASSERT(a == b);
     DLB_ASSERT(b == c);
+}
+
+void tests() {
+    test_float_parse();
+    dlb_hash_test();
 }
 
 DLB_ASSERT_HANDLER(assert_handler) {
@@ -80,9 +88,13 @@ int main(int argc, char *argv[]) {
     init_type_loaders();
 
     const char *filename = "data/scene.dat";
-    //write_scene(filename);
+    write_scene(filename);
     read_scene(filename);
+    
+    const char *filname_cus = "data/custom.dat";
+    read_scene(filname_cus);
 
-    printf("fin.");
+    printf("fin.\n");
+	getchar();
     return 0;
 }

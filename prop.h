@@ -11,7 +11,7 @@ typedef enum prop_type {
 } prop_type;
 
 static inline const char *prop_type_str(prop_type type) {
-    const char *str;
+	const char *str = "";
     switch(type) {
     case PROP_NULL:   str = "<null>";  break;
     case PROP_INT:    str = "int32";   break;

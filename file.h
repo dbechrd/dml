@@ -10,7 +10,7 @@ typedef enum file_mode {
 } file_mode;
 
 static inline const char *file_mode_str(file_mode mode) {
-    const char *str;
+	const char *str = "";
     switch(mode) {
     case FILE_READ: str = "rb"; break;
     case FILE_WRITE: str = "wb"; break;

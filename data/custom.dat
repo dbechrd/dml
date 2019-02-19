@@ -28,4 +28,5 @@ test scene
     't', 'e', 's', 't',
     'a', 'r', 'r', 'a', 'y',
   }
+  char_arary_escaped: char[] = { '"', ''', '\', '\t', '\r', '\n', '\0' }
   position2: float32[3] = { 0.001, 0.002, 0.003 }

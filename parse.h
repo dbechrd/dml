@@ -22,8 +22,8 @@
 #define CHAR_CHAR_DELIM         "'"
 #define CHAR_STRING_DELIM       "\""
 #define CHAR_COMMENT            "#"
-#define CHAR_WHITESPACE         " \t\n"
-#define CHAR_EOL                "\n"
+#define CHAR_WHITESPACE         " \t\r\n"
+#define CHAR_EOL                "\r\n"
 #define CHAR_ARRAY_LEN_START    "["
 #define CHAR_ARRAY_LEN_END      "]"
 #define CHAR_ARRAY_START        "{"
@@ -34,7 +34,7 @@
 #define CHAR_TYPE               CHAR_ALPHA_LOWER CHAR_DIGIT
 #define CHAR_CHAR_LITERAL       CHAR_ALPHA_NUM CHAR_SPECIAL " "
 #define CHAR_STRING_LITERAL     CHAR_ALPHA_NUM CHAR_SPECIAL CHAR_WHITESPACE "'"
-#define CHAR_COMMENT_LITERAL     CHAR_ALPHA_NUM CHAR_SPECIAL " \t'\""
+#define CHAR_COMMENT_LITERAL    CHAR_ALPHA_NUM CHAR_SPECIAL " \t'\""
 #define CHAR_SEPARATOR          CHAR_WHITESPACE CHAR_EOL
 
 char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,

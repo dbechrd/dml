@@ -5,6 +5,42 @@
 #include "dlb_types.h"
 #include <math.h>
 
+unsigned int parse_uint(char *buf)
+{
+    unsigned long value = strtoul(buf, 0, 10);
+    DLB_ASSERT(value < ULONG_MAX);
+    return (unsigned int)value;
+}
+
+int parse_int(char *buf)
+{
+    long value = strtol(buf, 0, 10);
+    DLB_ASSERT(value > 0);
+    DLB_ASSERT(value < LONG_MAX);
+    return (int)value;
+}
+
+float parse_float_hex(char *buf)
+{
+    float value;
+    unsigned l = strtoul(buf, 0, 16);
+    DLB_ASSERT(l < ULONG_MAX);
+    value = *(float *)&l;
+    return value;
+}
+
+float parse_float(char *buf)
+{
+    float value;
+    if (buf[0] == '0' && buf[1] == 'x') {
+        value = parse_float_hex(buf);
+    }
+    else {
+        value = strtof(buf, 0);
+    }
+    return value;
+}
+
 char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
                const char *delims, const char *valid_chars) {
     DLB_ASSERT(valid_chars);
@@ -26,8 +62,9 @@ char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
         // Validate character
         char valid = str_find_char(valid_chars, c);
         if (valid_chars && !valid) {
+            printf("Uh oh: [%d]\n", (int)c);
             PANIC_FILE(f, "[PARSE_ERROR] Unexpected character '%c' in expression starting at %d:%d. Expected [%s] or delimeter '[%s]'.\n",
-                       c, pos_start.line, pos_start.column, valid_chars, delims);
+                       c, (int)pos_start.line, (int)pos_start.column, valid_chars, delims);
         }
 
         buf[i] = c;
@@ -35,7 +72,7 @@ char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
 
     if (delims && !delim) {
         PANIC_FILE(f, "[PARSE_ERROR] Expected delim [%s] to end expression starting at %d:%d\n",
-                   delims, pos_start.line, pos_start.column);
+                   delims, (int)pos_start.line, (int)pos_start.column);
     }
 
     if (len) *len = i;
@@ -49,31 +86,10 @@ unsigned int read_uint(file *f, const char *delim) {
     return value;
 }
 
-unsigned int parse_uint(char *buf) {
-    unsigned long value = strtoul(buf, 0, 10);
-    DLB_ASSERT(value < ULONG_MAX);
-    return (unsigned int)value;
-}
-
 int read_int(file *f, const char *delims) {
     char buf[INT_MAX_LEN + 1] = { 0 };
     eat_chars(buf, INT_MAX_LEN, 0, f, delims, CHAR_DIGIT);
     int value = parse_int(buf);
-    return value;
-}
-
-int parse_int(char *buf) {
-    long value = strtol(buf, 0, 10);
-    DLB_ASSERT(value > 0);
-    DLB_ASSERT(value < LONG_MAX);
-    return (int)value;
-}
-
-float parse_float_hex(char *buf) {
-    float value;
-    unsigned l = strtoul(buf, 0, 16);
-    DLB_ASSERT(l < ULONG_MAX);
-    value = *(float *)&l;
     return value;
 }
 
@@ -102,18 +118,45 @@ float read_float(file *f, const char *delims) {
     return value;
 }
 
-float parse_float(char *buf) {
-    float value;
-    if (buf[0] == '0' && buf[1] == 'x') {
-        value = parse_float_hex(buf);
-    } else {
-        value = strtof(buf, 0);
-    }
-    return value;
-}
-
-char read_char(file *f, const char *delims, const char *valid_chars) {
+char read_char(file *f) {
+    // Note: ''' is valid syntax for a single quote char literal
     char c = file_char(f);
+    if (c == '\\') {
+        c = file_char(f);
+        switch (c) {
+        case '\'':
+            // Allow '\' as a valid char
+            c = '\\';
+            f->replay = true;
+            break;
+        case 't':
+            c = '\t';
+            break;
+        case 'r':
+            c = '\r';
+            break;
+        case 'n':
+            c = '\n';
+            break;
+        case '0':
+            c = '\0';
+            break;
+        case 'x':
+            // TODO: Handle hex byte codes
+            PANIC_FILE(f, "[PARSE_ERROR] Hex byte codes not yet supported in char literals.\n");
+            break;
+        case 'u':
+            // TODO: Handle short unicode code points
+            PANIC_FILE(f, "[PARSE_ERROR] Unicode hex code points not yet supported in char literals.\n");
+            break;
+        case 'U':
+            // TODO: Handle long unicode code points
+            PANIC_FILE(f, "[PARSE_ERROR] Unicode hex code points not yet supported in char literals.\n");
+            break;
+        default:
+            PANIC_FILE(f, "[PARSE_ERROR] Invalid escape sequence in char literal [\\%c].\n", c);
+        }
+    }
     return c;
 }
 

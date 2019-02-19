@@ -10,7 +10,7 @@
 
 struct dlb_hash type_loaders;
 void init_type_loaders() {
-    dlb_hash_init(&type_loaders, "Type Loaders", 10, 2);
+    dlb_hash_init(&type_loaders, "Type Loaders", 16);
     //dlb_hash_insert(&type_loaders, dlb_symbol_hash(sym_entity), 0);
 };
 
@@ -40,6 +40,7 @@ void scene_save(scene *scn, file *entitydb) {
 scene *scene_load(file *f) {
     const char *name = read_string(f, CHAR_EOL, CHAR_STRING_LITERAL);
     file_expect_char(f, CHAR_EOL, 1);
+    file_allow_char(f, CHAR_EOL, 0);
     scene *scn = scene_init(name);
     for (;;) {
         char c = file_char(f);
@@ -51,6 +52,7 @@ scene *scene_load(file *f) {
             file_expect_char(f, ":", 1);
             const char *type = read_string(f, CHAR_EOL, CHAR_TYPE);
             file_expect_char(f, CHAR_EOL, 1);
+            file_allow_char(f, CHAR_EOL, 0);
 
             // TODO: Register type names (e.g. entity) in lookup table that maps
             //       them to their respective loader
@@ -75,4 +77,5 @@ void scene_print(scene *scn) {
     for (entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
         entity_print(stdout, e);
     }
+    fflush(stdout);
 }

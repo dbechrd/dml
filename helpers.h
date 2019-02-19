@@ -2,11 +2,13 @@
 
 #define PANIC(format, ...) \
     fprintf(stderr, (format), __VA_ARGS__); \
+    getchar(); \
     exit(1);
 
 #define PANIC_FILE(f, format, ...) \
     fprintf(stderr, "%s:%d:%d ", f->filename, f->pos.line, f->pos.column); \
     fprintf(stderr, (format), __VA_ARGS__); \
+    getchar(); \
     exit(1);
 
 static inline char str_find_char(const char *str, char c) {
