@@ -40,24 +40,36 @@ void scene_save(scene *scn, file *entitydb) {
 scene *scene_load(file *f) {
     const char *name = read_string(f, CHAR_EOL, CHAR_STRING_LITERAL);
     file_expect_char(f, CHAR_EOL, 1);
-    file_allow_char(f, CHAR_EOL, 0);
+    file_allow_char(f, CHAR_WHITESPACE, 0);
     scene *scn = scene_init(name);
     for (;;) {
         char c = file_char(f);
         switch(c) {
         case EOF:
             goto end;
+        case ' ': case '\t': case '\r': case '\n':
+            continue;
+        case '#':
+            file_allow_char(f, CHAR_COMMENT_LITERAL, 0);
+            continue;
         case '!': {
-            unsigned int uid = read_uint(f, ":");
-            file_expect_char(f, ":", 1);
-            const char *type = read_string(f, CHAR_EOL, CHAR_TYPE);
-            file_expect_char(f, CHAR_EOL, 1);
-            file_allow_char(f, CHAR_EOL, 0);
+            const char *type = read_string(f, ":" CHAR_WHITESPACE, CHAR_TYPE);
+            unsigned int uid = 0;
+            if (file_allow_char(f, ":", 1)) {
+                uid = read_uint(f, CHAR_WHITESPACE);
+            }
+            file_allow_char(f, CHAR_WHITESPACE, 0);
 
             // TODO: Register type names (e.g. entity) in lookup table that maps
             //       them to their respective loader
             if (type == sym_entity) {
-                entity_load(scn, uid, f);
+                entity_load(scn, ENTITY_GENERAL, uid, f);
+            } else if (type == sym_texture) {
+                entity_load(scn, ENTITY_TEXTURE, uid, f);
+            } else if (type == sym_material) {
+                entity_load(scn, ENTITY_MATERIAL, uid, f);
+            } else if (type == sym_mesh) {
+                entity_load(scn, ENTITY_MESH, uid, f);
             } else {
                 DLB_ASSERT(0); // wtf?
             }

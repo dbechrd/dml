@@ -12,11 +12,16 @@
 static struct dlb_hash symbol_table;
 
 const char *sym_entity;
+const char *sym_texture;
+const char *sym_material;
+const char *sym_mesh;
+
 const char *sym_int;
 const char *sym_float;
 const char *sym_char;
 const char *sym_string;
 const char *sym_vec3;
+const char *sym_vec4;
 
 const char *intern(const char *s, size_t len) {
     DLB_ASSERT(len);
@@ -31,11 +36,17 @@ const char *intern(const char *s, size_t len) {
 }
 
 void init_symbols() {
-    dlb_hash_init(&symbol_table, "[symbol_table]", 32);
-    sym_entity = intern(CSTR("entity"));
-    sym_int = intern(CSTR("int32"));
-    sym_float  = intern(CSTR("float32"));
-    sym_char = intern(CSTR("char"));
-    sym_string = intern(CSTR("string"));
-    sym_vec3 = intern(CSTR("vec3"));
+    dlb_hash_init(&symbol_table, "[symbol_table]", 128);
+
+    sym_entity   = intern(CSTR("entity"));
+    sym_texture  = intern(CSTR("texture"));
+    sym_material = intern(CSTR("material"));
+    sym_mesh     = intern(CSTR("mesh"));
+
+    sym_int      = intern(CSTR("int32"));
+    sym_float    = intern(CSTR("float32"));
+    sym_char     = intern(CSTR("char"));
+    sym_string   = intern(CSTR("string"));
+    sym_vec3     = intern(CSTR("vec3"));
+    sym_vec4     = intern(CSTR("vec4"));
 }

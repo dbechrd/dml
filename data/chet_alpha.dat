@@ -1,0 +1,80 @@
+test scene
+
+    # We could also make name a hard-code field rather than a property:
+    #!scene "test scene"
+    #!texture "bricks_diff"
+
+!texture
+	name: string = "tex_bricks_diff"
+	path: string = "texture/cobble_diff.tga"
+!texture
+	name: string = "tex_bricks_mrao"
+	path: string = "texture/cobble_mrao.tga"
+!texture
+	name: string = "tex_bricks_emis"
+	color: vec4 = { 1.0, 1.0, 1.0, 0.0 }
+!material
+	name: string = "mat_bricks"
+	albedo: string = "tex_bricks_diff"
+	mrao: string = "tex_bricks_mrao"
+	emission: string = "tex_bricks_emis"
+!material
+	name: string = "mat_timmy"
+!texture  # TODO: !skybox
+	name: string = "skybox"
+	posx: string = "texture/sky_posx.tga"
+	negx: string = "texture/sky_negx.tga"
+	posy: string = "texture/sky_posy.tga"
+	negy: string = "texture/sky_negy.tga"
+	posz: string = "texture/sky_posz.tga"
+	negz: string = "texture/sky_negz.tga"
+	# TODO: Implement string arrays (even if we don't use this for skyboxes)
+	#filenames: string[6] = {
+	#	"texture/sky_posx.tga",
+	#	"texture/sky_negx.tga",
+	#	"texture/sky_posy.tga",
+	#	"texture/sky_negy.tga",
+	#	"texture/sky_posz.tga",
+	#	"texture/sky_negz.tga",
+	#}
+!mesh
+	name: string = "mesh_alpha_terrain"
+	path: string = "mesh/alpha_terrain_001.obj"
+!mesh
+	name: string = "mesh_alpha_door"
+	path: string = "mesh/alpha_door_001.obj"
+!mesh
+	name: string = "mesh_alpha_game_panel"
+	path: string = "mesh/alpha_game_panel.obj"
+!mesh
+	name: string = "mesh_alpha_game_button"
+	path: string = "mesh/alpha_game_button.obj"
+!mesh
+	name: string = "mesh_alpha_staircase"
+	path: string = "mesh/alpha_staircase_001.obj"
+!mesh
+	name: string = "mesh_alpha_wall"
+	path: string = "mesh/alpha_wall_001.obj"
+!mesh
+	name: string = "mesh_alpha_room"
+	path: string = "mesh/alpha_room.obj"
+!entity
+	name: string = "terrain"
+	mesh: string = "mesh_alpha_terrain"
+	material: string = "mat_bricks"
+	ignore_select: int32 = 1
+	# TODO: Create bool alias for int32
+	#ignore_select: bool = true
+!entity
+	name: string = "timmy"
+	position: vec3 = { -4.0, 0.0, 0.0 }
+	mesh: string = "mesh_alpha_door"
+	material: string = "mat_timmy"
+	lights_on: int32 = 1
+	audio_on: int32 = 1
+!entity
+	name: string = "light_test"
+	position: vec3 = { 0.0, 4.0, 0.0 }
+!entity
+	name: string = "light_test_cube"
+	position: vec3 = { 0.0, 2.0, 0.0 }

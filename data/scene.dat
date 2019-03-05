@@ -1,11 +1,11 @@
 test scene
-!1:entity
+!entity:1
   name: string = "Timmy"
   age: int32 = 42
   weight: float32 = 123.000000:0x42f60000
   height: string = "5ft 6in"
   city: string = "San Francisco"
-!2:entity
+!entity:2
   name: string = "Bobby"
   age: int32 = 24
   weight: float32 = 321.000000:0x43a08000

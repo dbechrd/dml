@@ -1,11 +1,14 @@
 test scene
-!1:entity
+!texture
+	name: string = "texture_example"
+	path: string = "texture/example.tga"
+!entity:1
   name: string = "Timmy"  # This is entity #1's name
   age: int32 = 42
   weight: float32 = 123.000000:0x42f60000
   height: string = "5ft 6in"
   city: string = "San Francisco"
-!2:entity
+!entity:2
   name: string = "Bobby"  # Entity 2 is a "great" guy
   age: int32 = 24
   weight1: float32 = 321.000000

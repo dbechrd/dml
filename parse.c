@@ -118,7 +118,7 @@ float read_float(file *f, const char *delims) {
     return value;
 }
 
-char read_char(file *f) {
+char read_char(file *f, const char *delims, const char *valid_chars) {
     // Note: ''' is valid syntax for a single quote char literal
     char c = file_char(f);
     if (c == '\\') {

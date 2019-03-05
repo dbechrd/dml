@@ -23,7 +23,7 @@
 
 entity *entity_create(scene *scn, const char *name, int age, float weight,
                       const char *height, const char *city) {
-    entity *e = entity_init(scn, 0);
+    entity *e = entity_init(scn, ENTITY_GENERAL, 0);
     prop_set_string(e, intern(CSTR("name")), name);
     prop_set_int(e, intern(CSTR("age")), age);
     prop_set_float(e, intern(CSTR("weight")), weight);
@@ -87,11 +87,11 @@ int main(int argc, char *argv[]) {
     init_symbols();
     init_type_loaders();
 
-    const char *filename = "data/scene.dat";
-    write_scene(filename);
-    read_scene(filename);
+    //const char *filename = "data/scene.dat";
+    //write_scene(filename);
+    //read_scene(filename);
     
-    const char *filname_cus = "data/custom.dat";
+    const char *filname_cus = "data/chet_alpha.dat";
     read_scene(filname_cus);
 
     printf("fin.\n");

@@ -27,7 +27,24 @@ const char *char_printable(const char *c) {
 }
 
 void entity_print(FILE *f, entity *e) {
-    fprintf(f, "!%d:entity\n", e->uid);
+    const char *type_str = "";
+    switch (e->type) {
+    case ENTITY_GENERAL:
+        type_str = sym_entity;
+        break;
+    case ENTITY_TEXTURE:
+        type_str = sym_texture;
+        break;
+    case ENTITY_MATERIAL:
+        type_str = sym_material;
+        break;
+    case ENTITY_MESH:
+        type_str = sym_mesh;
+        break;
+    default:
+        DLB_ASSERT("Unknown entity type");
+    }
+    fprintf(f, "!%s:%d\n", type_str, e->uid);
     for (prop *prop = e->properties; prop != dlb_vec_end(e->properties); prop++) {
         fprintf(f, "  %s: ", prop->name);
         if (prop->type_alias == NULL) {
@@ -108,18 +125,22 @@ void entity_save(entity *e, file *f) {
     entity_print(f->hnd, e);
 }
 
-entity *entity_init(scene *scn, unsigned int uid) {
+entity *entity_init(scene *scn, entity_type type, unsigned int uid) {
     if (uid) {
         DLB_ASSERT(uid >= scn->next_uid);
         scn->next_uid = uid;
     }
     entity *e = dlb_vec_alloc(scn->entities);
+    if (e->properties == 0xCDCDCDCD) {
+        DLB_ASSERT(0);
+    }
+    e->type = type;
     e->uid = scn->next_uid++;
     return e;
 }
 
-void entity_load(scene *scn, unsigned int uid, file *f) {
-    entity *e = entity_init(scn, uid);
+void entity_load(scene *scn, entity_type type, unsigned int uid, file *f) {
+    entity *e = entity_init(scn, type, uid);
 
     for (;;) {
         char c = file_char(f);
@@ -273,6 +294,25 @@ void entity_load(scene *scn, unsigned int uid, file *f) {
                 p->type = PROP_FLOAT;
                 p->type_alias = sym_vec3;
                 p->length = 3;
+                dlb_vec_reserve(p->value.float_array, p->length);
+                for (size_t i = 0; i < p->length; i++) {
+                    p->value.float_array[i] = read_float(f, CHAR_SEPARATOR ":" ",");
+                    file_allow_char(f, CHAR_WHITESPACE, 0);
+                    if (i < p->length - 1) {
+                        file_expect_char(f, ",", 1);
+                    } else {
+                        file_allow_char(f, ",", 1);
+                    }
+                    file_allow_char(f, CHAR_WHITESPACE, 0);
+                }
+                file_expect_char(f, CHAR_ARRAY_END, 1);
+            } else if (type == sym_vec4) {
+                DLB_ASSERT(!is_array);  // TODO: Handle arrays of vec4?
+                file_expect_char(f, CHAR_ARRAY_START, 1);
+                file_allow_char(f, CHAR_WHITESPACE, 0);
+                p->type = PROP_FLOAT;
+                p->type_alias = sym_vec4;
+                p->length = 4;
                 dlb_vec_reserve(p->value.float_array, p->length);
                 for (size_t i = 0; i < p->length; i++) {
                     p->value.float_array[i] = read_float(f, CHAR_SEPARATOR ":" ",");
