@@ -8,9 +8,9 @@
 #define STRING_MAX_LEN      256
 
 #define CHAR_DIGIT              "0123456789"
-#define CHAR_FLOAT              CHAR_DIGIT "-+.f"
-#define CHAR_HEX_LOWER          CHAR_DIGIT "abcdef"
-#define CHAR_HEX_UPPER          CHAR_DIGIT "ABCDEF"
+#define CHAR_FLOAT              CHAR_DIGIT "-+."
+//#define CHAR_HEX_LOWER          CHAR_DIGIT "abcdef"
+//#define CHAR_HEX_UPPER          CHAR_DIGIT "ABCDEF"
 #define CHAR_HEX                CHAR_DIGIT "abcdefABCDEF"
 #define CHAR_ALPHA_LOWER        "abcdefghijklmnopqrstuvwxyz"
 #define CHAR_ALPHA_UPPER        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"

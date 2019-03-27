@@ -68,8 +68,10 @@ void test_float_parse()
     float a = 123.0f;
     float b = parse_float("123.0f");
     float c = parse_float("0x42f60000");
-    DLB_ASSERT(a == b);
-    DLB_ASSERT(b == c);
+    float d = parse_float("0x42f60000(123)");
+    DLB_ASSERT(b == a);
+    DLB_ASSERT(c == a);
+    DLB_ASSERT(d == a);
 }
 
 void tests() {
@@ -87,11 +89,11 @@ int main(int argc, char *argv[]) {
     init_symbols();
     init_type_loaders();
 
-    //const char *filename = "data/scene.dat";
+    //const char *filename = "data/scene.dml";
     //write_scene(filename);
     //read_scene(filename);
     
-    const char *filname_cus = "data/chet_alpha.dat";
+    const char *filname_cus = "data/chet_alpha.dml";
     read_scene(filname_cus);
 
     printf("fin.\n");

@@ -2,12 +2,12 @@ test scene
 !entity:1
   name: string = "Timmy"
   age: int32 = 42
-  weight: float32 = 123.000000:0x42f60000
+  weight: float32 = 0x42f60000(123)
   height: string = "5ft 6in"
   city: string = "San Francisco"
 !entity:2
   name: string = "Bobby"
   age: int32 = 24
-  weight: float32 = 321.000000:0x43a08000
+  weight: float32 = 0x43a08000(321)
   height: string = "6ft 5in"
   city: string = "Fran Sansisco"

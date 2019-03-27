@@ -7,14 +7,14 @@ Supported syntax as of Feb 3, 2019 (subject to change):
     !1:entity
       name: string = "Timmy"  # This is entity #1's name
       age: int32 = 42
-      weight: float32 = 123.000000:0x42f60000
+      weight: float32 = 0x42f60000(123)
       height: string = "5ft 6in"
       city: string = "San Diego"
     !2:entity
       name: string = "Bobby"  # This is a "another" guy's name
       age: int32 = 24
-      weight1: float32 = 321.000000
-      weight2: float32 = 321.000000:0x43a08000
+      weight1: float32 = 321
+      weight2: float32 = 0x43a08000(321)
       height: string = "2.86 meters"
       city: string = "New York"
       numbers: int32[] = {

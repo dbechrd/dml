@@ -77,13 +77,15 @@ void entity_print(FILE *f, entity *e) {
             break;
         case PROP_FLOAT:
             if (prop->length == 0) {
-                fprintf(f, "%f:0x%x", prop->value.as_float,
-                        *(unsigned *)&prop->value.as_float);
+                fprintf(f, prop->value.as_float == 0 ? "0" : "0x%08x(%g)",
+                        *(unsigned *)&prop->value.as_float,
+                        prop->value.as_float);
             } else {
                 fprintf(f, CHAR_ARRAY_START "\n    ");
                 for (size_t i = 0; i < prop->length; i++) {
-                    fprintf(f, "%f:0x%x", prop->value.float_array[i],
-                            *(unsigned *)&prop->value.float_array[i]);
+                    fprintf(f, prop->value.float_array[i] == 0 ? "0" : "0x%08x(%g)",
+                            *(unsigned *)&prop->value.float_array[i],
+                            prop->value.float_array[i]);
                     if (i == prop->length - 1) {
                         fprintf(f, "\n");
                     } else {
@@ -226,7 +228,7 @@ void entity_load(scene *scn, entity_type type, unsigned int uid, file *f) {
                         dlb_vec_alloc(p->value.int_array);
                     }
                     for (size_t i = 0; i < p->length; i++) {
-                        p->value.float_array[i] = read_float(f, CHAR_SEPARATOR ":" ",");
+                        p->value.float_array[i] = read_float(f, CHAR_SEPARATOR "(,");
                         file_allow_char(f, CHAR_WHITESPACE, 0);
                         if (p->length != SIZE_MAX && i < p->length - 1) {
                                 file_expect_char(f, ",", 1);
@@ -242,7 +244,7 @@ void entity_load(scene *scn, entity_type type, unsigned int uid, file *f) {
                     }
                     file_expect_char(f, CHAR_ARRAY_END, 1);
                 } else {
-                    p->value.as_float = read_float(f, CHAR_SEPARATOR ":");
+                    p->value.as_float = read_float(f, CHAR_SEPARATOR "(");
                 }
             } else if (type == sym_char) {
                 p->type = PROP_CHAR;
@@ -296,7 +298,7 @@ void entity_load(scene *scn, entity_type type, unsigned int uid, file *f) {
                 p->length = 3;
                 dlb_vec_reserve(p->value.float_array, p->length);
                 for (size_t i = 0; i < p->length; i++) {
-                    p->value.float_array[i] = read_float(f, CHAR_SEPARATOR ":" ",");
+                    p->value.float_array[i] = read_float(f, CHAR_SEPARATOR "(,");
                     file_allow_char(f, CHAR_WHITESPACE, 0);
                     if (i < p->length - 1) {
                         file_expect_char(f, ",", 1);
@@ -315,7 +317,7 @@ void entity_load(scene *scn, entity_type type, unsigned int uid, file *f) {
                 p->length = 4;
                 dlb_vec_reserve(p->value.float_array, p->length);
                 for (size_t i = 0; i < p->length; i++) {
-                    p->value.float_array[i] = read_float(f, CHAR_SEPARATOR ":" ",");
+                    p->value.float_array[i] = read_float(f, CHAR_SEPARATOR "(,");
                     file_allow_char(f, CHAR_WHITESPACE, 0);
                     if (i < p->length - 1) {
                         file_expect_char(f, ",", 1);

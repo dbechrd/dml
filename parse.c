@@ -34,8 +34,7 @@ float parse_float(char *buf)
     float value;
     if (buf[0] == '0' && buf[1] == 'x') {
         value = parse_float_hex(buf);
-    }
-    else {
+    } else {
         value = strtof(buf, 0);
     }
     return value;
@@ -63,7 +62,7 @@ char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
         char valid = str_find_char(valid_chars, c);
         if (valid_chars && !valid) {
             printf("Uh oh: [%d]\n", (int)c);
-            PANIC_FILE(f, "[PARSE_ERROR] Unexpected character '%c' in expression starting at %d:%d. Expected [%s] or delimeter '[%s]'.\n",
+            PANIC_FILE(f, "[PARSE_ERROR] Unexpected character '%c' in expression starting at %d:%d. Expected [%s] or delimeter [%s].\n",
                        c, (int)pos_start.line, (int)pos_start.column, valid_chars, delims);
         }
 
@@ -95,24 +94,27 @@ int read_int(file *f, const char *delims) {
 
 float read_float(file *f, const char *delims) {
     char buf[FLOAT_MAX_LEN + 1] = { 0 };
-    char sep = eat_chars(buf, FLOAT_MAX_LEN, 0, f, delims, CHAR_FLOAT);
+    char sep = eat_chars(buf, FLOAT_MAX_LEN, 0, f, delims, CHAR_FLOAT CHAR_HEX "x");
     float value = parse_float(buf);
 
-    if (sep == ':') {
-        file_expect_char(f, ":", 1);
-        file_allow_char(f, "0", 1);
-        file_allow_char(f, "x", 1);
-        char hex_buf[FLOAT_HEX_LEN + 1] = { 0 };
-        eat_chars(hex_buf, FLOAT_HEX_LEN, 0, f, 0, CHAR_HEX);
-
-        float hex_value = parse_float_hex(hex_buf);
-        float delta = fabsf(hex_value - value);
-        if (delta < FLOAT_HEX_MAX_DELTA) {
-            value = hex_value;
-        } else {
-            PANIC_FILE(f, "[PARSE_ERROR] Float dec/hex delta [%f] greater than allowed [%f].\n",
-                       delta, FLOAT_HEX_MAX_DELTA);
-        }
+    if (sep == '(') {
+        file_expect_char(f, "(", 1);
+        eat_chars(buf, FLOAT_MAX_LEN, 0, f, ")", CHAR_FLOAT);
+        file_expect_char(f, ")", 1);
+        //file_expect_char(f, ":", 1);
+        //file_allow_char(f, "0", 1);
+        //file_allow_char(f, "x", 1);
+        //char hex_buf[FLOAT_HEX_LEN + 1] = { 0 };
+        //eat_chars(hex_buf, FLOAT_HEX_LEN, 0, f, 0, CHAR_HEX);
+        //
+        //float hex_value = parse_float_hex(hex_buf);
+        //float delta = fabsf(hex_value - value);
+        //if (delta < FLOAT_HEX_MAX_DELTA) {
+        //    value = hex_value;
+        //} else {
+        //    PANIC_FILE(f, "[PARSE_ERROR] Float dec/hex delta [%f] greater than allowed [%f].\n",
+        //               delta, FLOAT_HEX_MAX_DELTA);
+        //}
     }
 
     return value;
