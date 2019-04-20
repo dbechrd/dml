@@ -8,9 +8,9 @@
 #include "dlb_vector.h"
 #include "dlb_hash.h"
 
-struct dlb_hash type_loaders;
+dlb_hash type_loaders;
 void init_type_loaders() {
-    dlb_hash_init(&type_loaders, "Type Loaders", 16);
+    dlb_hash_init(&type_loaders, DLB_HASH_STRING, "Type Loaders", 16);
     //dlb_hash_insert(&type_loaders, dlb_symbol_hash(sym_entity), 0);
 };
 

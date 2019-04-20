@@ -6,25 +6,6 @@
 #include "parse.h"
 #include "dlb_types.h"
 #include "dlb_vector.h"
-#include "ctype.h"
-
-const char *char_printable(const char *c) {
-    // HACK: Static buffer, don't hold pointers to this
-    static char buf[2] = { 0 };
-    if (isprint(*c)) {
-        buf[0] = *c;
-        return buf;
-    }
-
-    switch (*c) {
-    case '\t': return "\\t";
-    case '\r': return "\\r";
-    case '\n': return "\\n";
-    case '\0': return "\\0";
-    default:
-        return "?";
-    }
-}
 
 void entity_print(FILE *f, entity *e) {
     const char *type_str = "";
@@ -133,7 +114,7 @@ entity *entity_init(scene *scn, entity_type type, unsigned int uid) {
         scn->next_uid = uid;
     }
     entity *e = dlb_vec_alloc(scn->entities);
-    if (e->properties == 0xCDCDCDCD) {
+    if (e->properties == (prop *)0xCDCDCDCD) {
         DLB_ASSERT(0);
     }
     e->type = type;

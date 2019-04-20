@@ -9,7 +9,7 @@
 // TODO: It may be useful to have multiple symbol tables to allow freeing
 //       symbols that are no longer in use (e.g. table per scene file). This
 //       hasn't been necessary yet, so I'm not going to do it preemptively.
-static struct dlb_hash symbol_table;
+static dlb_hash symbol_table;
 
 const char *sym_entity;
 const char *sym_texture;
@@ -36,7 +36,7 @@ const char *intern(const char *s, size_t len) {
 }
 
 void init_symbols() {
-    dlb_hash_init(&symbol_table, "[symbol_table]", 128);
+    dlb_hash_init(&symbol_table, DLB_HASH_STRING, "[symbol_table]", 128);
 
     sym_entity   = intern(CSTR("entity"));
     sym_texture  = intern(CSTR("texture"));

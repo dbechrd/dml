@@ -13,12 +13,12 @@ typedef enum prop_type {
 static inline const char *prop_type_str(prop_type type) {
 	const char *str = "";
     switch(type) {
-    case PROP_NULL:   str = "<null>";  break;
-    case PROP_INT:    str = "int32";   break;
-    case PROP_FLOAT:  str = "float32"; break;
-    case PROP_CHAR:   str = "char";    break;
-    case PROP_STRING: str = "string";  break;
-    default: DLB_ASSERT(0);
+        case PROP_NULL:   str = "<null>";  break;
+        case PROP_INT:    str = "int32";   break;
+        case PROP_FLOAT:  str = "float32"; break;
+        case PROP_CHAR:   str = "char";    break;
+        case PROP_STRING: str = "string";  break;
+        default: DLB_ASSERT(0);
     }
     return str;
 };

@@ -84,7 +84,7 @@ DLB_ASSERT_HANDLER(assert_handler) {
 }
 
 int main(int argc, char *argv[]) {
-    DLB_assert_handler = assert_handler;
+    dlb_assert_handler = assert_handler;
     tests();
     init_symbols();
     init_type_loaders();
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
     //const char *filename = "data/scene.dml";
     //write_scene(filename);
     //read_scene(filename);
-    
+
     const char *filname_cus = "data/chet_alpha.dml";
     read_scene(filname_cus);
 
