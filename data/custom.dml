@@ -1,35 +1,21 @@
-test scene
-!texture
-	name: string = "texture_example"
-	path: string = "texture/example.tga"
-!entity:1
-  name: string = "Timmy"  # This is entity #1's name
-  age: int32 = 42
-  weight: float32 = 0x42f60000(123)
-  height: string = "5ft 6in"
-  city: string = "San Francisco"
-!entity:2
-  name: string = "Bobby"  # Entity 2 is a "great" guy
-  age: int32 = 24
-  weight1: float32 = 321.000000
-  weight2: float32 = 0x43a08000(321)
-  height: string = "2.86 meters"
-  city: string = "New York"
-  numbers: int32[] = {
-    92492, 27745, 37710, 348, 28714, 68388, 18949, 4572, 568654, 654568, 213115
-  }
-  position1: vec3 = {
-    1.001,
-    2.002,
-    3.003,
-  }
-  char_array_fixed: char[7] = { 't', 'e', 's', 't', '1', '2', '3' }
-  char_array_dyn: char[] = {
-    't', 'h', 'i', 's',
-    'i', 's',
-    'a',
-    't', 'e', 's', 't',
-    'a', 'r', 'r', 'a', 'y',
-  }
-  char_arary_escaped: char[] = { '"', ''', '\', '\t', '\r', '\n', '\0' }
-  position2: float32[3] = { 0.001, 0.002, 0.003 }
+ta_texture:
+  name: "texture_example"
+  test: "First\\\"hi\"\\Second"
+  path: "texture/example.tga"
+ta_entity:
+  name: "Timmy"  # This is entity #1's name
+  age: 42
+  zero: 0
+  negative: -1
+  weight: 0x42f60000(123)
+  latitude: 321.000000
+  city: "San Francisco"
+  numbers: []
+  position: {}
+  _bad_ident: "asdf"
+  #bad_string: "asdfsdf"aa"
+  #numbers: [
+  #  92492, 27745, 37710, 348, 28714, 68388, 18949, 4572, 568654, 654568, 213115
+  #]
+  #position: { x: 1.001, y: 2.002, z: 3.003 }
+  #escape_chars: "foo \"'\\\t\r\n\0 bar"

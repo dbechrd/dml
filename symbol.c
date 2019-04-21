@@ -38,10 +38,10 @@ const char *intern(const char *s, size_t len) {
 void init_symbols() {
     dlb_hash_init(&symbol_table, DLB_HASH_STRING, "[symbol_table]", 128);
 
-    sym_entity   = intern(CSTR("entity"));
-    sym_texture  = intern(CSTR("texture"));
-    sym_material = intern(CSTR("material"));
-    sym_mesh     = intern(CSTR("mesh"));
+    sym_entity   = intern(CSTR("ta_entity"));
+    sym_texture  = intern(CSTR("ta_texture"));
+    sym_material = intern(CSTR("ta_material"));
+    sym_mesh     = intern(CSTR("ta_mesh"));
 
     sym_int      = intern(CSTR("int32"));
     sym_float    = intern(CSTR("float32"));

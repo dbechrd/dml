@@ -1,49 +1,55 @@
 #pragma once
 #include "file.h"
 
-#define INT_MAX_LEN         32
-#define FLOAT_MAX_LEN       64
-#define FLOAT_HEX_LEN       8
-#define FLOAT_HEX_MAX_DELTA 0.00001f
-#define STRING_MAX_LEN      256
+#define MAX_COMMENT_LEN     256
+#define MAX_IDENT_LEN       31
+#define MAX_NUMBER_LEN      64
+#define MAX_STRING_LEN      1024
 
-#define CHAR_DIGIT              "0123456789"
-#define CHAR_FLOAT              CHAR_DIGIT "-+."
-//#define CHAR_HEX_LOWER          CHAR_DIGIT "abcdef"
-//#define CHAR_HEX_UPPER          CHAR_DIGIT "ABCDEF"
-#define CHAR_HEX                CHAR_DIGIT "abcdefABCDEF"
-#define CHAR_ALPHA_LOWER        "abcdefghijklmnopqrstuvwxyz"
-#define CHAR_ALPHA_UPPER        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-#define CHAR_ALPHA              CHAR_ALPHA_LOWER CHAR_ALPHA_UPPER
-#define CHAR_ALPHA_NUM          CHAR_ALPHA CHAR_DIGIT
-#define CHAR_SPECIAL            "`~!@#$%^&*()-_=+[{]}\\|;:,<.>/?"
-//#define CHAR_ESCAPE         "\t\"\r\n"
+#define MAX_INT_LEN         32
+#define MAX_FLOAT_LEN       64
+#define MAX_FLOAT_HEX_LEN   8
+#define MAX_FLOAT_HEX_DELTA 0.00001f
 
-#define CHAR_CHAR_DELIM         "'"
-#define CHAR_STRING_DELIM       "\""
-#define CHAR_COMMENT            "#"
-#define CHAR_WHITESPACE         " \t\r\n"
-#define CHAR_EOL                "\r\n"
-#define CHAR_ARRAY_LEN_START    "["
-#define CHAR_ARRAY_LEN_END      "]"
-#define CHAR_ARRAY_START        "{"
-#define CHAR_ARRAY_END          "}"
+#define C__DIGIT            "0123456789"
+#define C__SIGN             "+-"
+#define C__ALPHA_LOWER      "abcdefghijklmnopqrstuvwxyz"
+#define C__ALPHA_UPPER      "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define C__ALPHA            C__ALPHA_LOWER C__ALPHA_UPPER
+#define C__ALPHA_NUM        C__ALPHA C__DIGIT
+#define C__ALPHA_SPECIAL    C__ALPHA_NUM "`~!@#$%^&*()-_=+[{]}\\|;:,<.>/?'"
+#define C__WHITESPACE       " \t\r\n"
 
-#define CHAR_IDENTIFIER_START   CHAR_ALPHA_LOWER
-#define CHAR_IDENTIFIER         CHAR_ALPHA_LOWER CHAR_DIGIT "_"
-#define CHAR_TYPE               CHAR_ALPHA_LOWER CHAR_DIGIT
-#define CHAR_CHAR_LITERAL       CHAR_ALPHA_NUM CHAR_SPECIAL " "
-#define CHAR_STRING_LITERAL     CHAR_ALPHA_NUM CHAR_SPECIAL CHAR_WHITESPACE "'"
-#define CHAR_COMMENT_LITERAL    CHAR_ALPHA_NUM CHAR_SPECIAL " \t'\""
-#define CHAR_SEPARATOR          CHAR_WHITESPACE CHAR_EOL
+#define C_WHITESPACE        C__WHITESPACE
 
-char eat_chars(char *buf, size_t buf_len, size_t *len, file *f,
-               const char *delims, const char *valid_chars);
-unsigned int read_uint(file *f, const char *delims);
+#define C_COMMENT_START     "#"
+#define C_COMMENT           C__ALPHA_SPECIAL " \t\""
+#define C_COMMENT_END       "\r\n"
+
+#define C_IDENT_START       C__ALPHA
+#define C_IDENT             C__ALPHA_LOWER C__DIGIT "_"
+#define C_IDENT_END         ":"
+
+#define C_NUMBER_START      C__SIGN C__DIGIT
+#define C_NUMBER_HEX        C__DIGIT "abcdefABCDEF"
+#define C_NUMBER_BINARY    "01"
+#define C_NUMBER_SIGN       C__SIGN
+#define C_NUMBER_INT        C__DIGIT
+#define C_NUMBER_FLOAT      C__DIGIT "."
+#define C_NUMBER_END        C__WHITESPACE
+
+#define C_STRING_START      "\""
+#define C_STRING            C__ALPHA_SPECIAL C_WHITESPACE
+#define C_STRING_END        "\""
+
+#define C_ARRAY_START       "["
+#define C_ARRAY_END         "]"
+
+#define C_OBJECT_START      "{"
+#define C_OBJECT_END        "}"
+
 unsigned int parse_uint(char *buf);
-int read_int(file *f, const char *delims);
 int parse_int(char *buf);
-float read_float(file *f, const char *delims);
+float parse_float_hex(char *buf);
 float parse_float(char *buf);
-char read_char(file *f, const char *delims, const char *valid_chars);
-const char *read_string(file *f, const char *delims, const char *valid_chars);
+void parse_tests();

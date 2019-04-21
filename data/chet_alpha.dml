@@ -5,7 +5,7 @@ test scene
     #!texture "bricks_diff"
 
 !texture
-	name: "tex_bricks_diff"
+	name: string = "tex_bricks_diff"
 	path: string = "texture/cobble_diff.tga"
 !texture
 	name: string = "tex_bricks_mrao"

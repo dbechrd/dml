@@ -3,7 +3,6 @@
 #include "parse.h"
 //#include "prop.h"
 #include "symbol.h"
-#include "entity.h"
 #include "dlb_memory.h"
 #include "dlb_vector.h"
 #include "dlb_hash.h"
@@ -42,7 +41,7 @@ void write_scene(const char *filename) {
     printf("\n");
 
     file *data_file = file_open(filename, FILE_WRITE);
-    scene_save(scene, data_file);
+    scene_save(data_file, scene);
     file_close(data_file);
     scene_free(scene);
 }
@@ -58,29 +57,22 @@ void read_scene(const char *filename) {
     scene_free(scene);
 }
 
-void print(char *blah) {
-    float bleh = parse_float(blah);
-    printf("%s = %f [0x%x]\n", blah, bleh, *(unsigned *)&bleh);
-}
-
-void test_float_parse()
-{
-    float a = 123.0f;
-    float b = parse_float("123.0f");
-    float c = parse_float("0x42f60000");
-    float d = parse_float("0x42f60000(123)");
-    DLB_ASSERT(b == a);
-    DLB_ASSERT(c == a);
-    DLB_ASSERT(d == a);
-}
-
 void tests() {
-    test_float_parse();
+    parse_tests();
     dlb_hash_test();
 }
 
 DLB_ASSERT_HANDLER(assert_handler) {
-    PANIC("%s:%d [ASSERT FAILED] %s", filename, line, expr);
+    PANIC(expr);
+    //fprintf(stderr,
+    //    "\n---[DLB_ASSERT_HANDLER]---------------------------------------------------------\n"
+    //    "Source file: %s:%d\n\n"
+    //    "%s"
+    //    "\n--------------------------------------------------------------------------------\n",
+    //    filename, line, expr
+    //);
+    //getchar();
+    //exit(1);
 }
 
 int main(int argc, char *argv[]) {
@@ -93,7 +85,7 @@ int main(int argc, char *argv[]) {
     //write_scene(filename);
     //read_scene(filename);
 
-    const char *filname_cus = "data/chet_alpha.dml";
+    const char *filname_cus = "data/custom.dml";
     read_scene(filname_cus);
 
     printf("fin.\n");
