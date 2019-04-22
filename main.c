@@ -63,16 +63,15 @@ void tests() {
 }
 
 DLB_ASSERT_HANDLER(assert_handler) {
-    PANIC(expr);
-    //fprintf(stderr,
-    //    "\n---[DLB_ASSERT_HANDLER]---------------------------------------------------------\n"
-    //    "Source file: %s:%d\n\n"
-    //    "%s"
-    //    "\n--------------------------------------------------------------------------------\n",
-    //    filename, line, expr
-    //);
-    //getchar();
-    //exit(1);
+    fprintf(stderr,
+        "\n---[DLB_ASSERT_HANDLER]---------------------------------------------------------\n"
+        "Source file: %s:%d\n\n"
+        "%s\n"
+        "--------------------------------------------------------------------------------\n",
+        filename, line, expr
+    );
+    getchar();
+    exit(1);
 }
 
 int main(int argc, char *argv[]) {

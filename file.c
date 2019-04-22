@@ -102,20 +102,34 @@ char file_char_escaped(file *f)
             break;
         case 'x':
             // TODO: Handle hex byte codes
-            PANIC_FILE(f, "[PARSE_ERROR] Hex byte codes not yet supported in char literals.\n");
+            PANIC_FILE(f,
+                "[PARSE_ERROR] Hex byte codes not yet supported in char "
+                "literals.\n"
+            );
             break;
         case 'u':
             // TODO: Handle short unicode code points
-            PANIC_FILE(f, "[PARSE_ERROR] Unicode hex code points not yet supported in char literals.\n");
+            PANIC_FILE(f,
+                "[PARSE_ERROR] Short Unicode hex code points not yet supported "
+                "in char literals.\n"
+            );
             break;
         case 'U':
             // TODO: Handle long unicode code points
-            PANIC_FILE(f, "[PARSE_ERROR] Unicode hex code points not yet supported in char literals.\n");
+            PANIC_FILE(f,
+                "[PARSE_ERROR] Long unicode hex code points not yet supported "
+                "in char literals.\n"
+            );
             break;
         case EOF:
-            PANIC_FILE(f, "[PARSE_ERROR] Unexpected EOF while reading character.\n");
+            PANIC_FILE(f,
+                "[PARSE_ERROR] Unexpected EOF while reading character.\n"
+            );
         default:
-            PANIC_FILE(f, "[PARSE_ERROR] Invalid escape sequence in char literal [\\%c].\n", c);
+            PANIC_FILE(f,
+                "[PARSE_ERROR] Invalid escape sequence in char literal '%s'."
+                "\n", char_printable(&c)
+            );
     }
     return c;
 }
@@ -152,10 +166,11 @@ char file_read(file *f, char *buf, size_t count, const char *valid_chars,
         char valid = str_contains_chr(valid_chars, c);
         if (valid_chars && !valid) {
             if (delims) {
-                PANIC_FILE(
-                    f, "[PARSE_ERROR] Unexpected character '%c' in expression "
-                    "starting at %d:%d. Expected [%s] or delimeter [%s].\n", c,
-                    (int)pos_start.line, (int)pos_start.column, valid_chars, delims
+                PANIC_FILE(f,
+                    "[PARSE_ERROR] Unexpected character '%s' in expression "
+                    "starting at %d:%d. Expected [%s] or delimeter [%s].\n",
+                    char_printable(&c), (int)pos_start.line,
+                    (int)pos_start.column, valid_chars, delims
                 );
             } else {
                 f->replay = true;
@@ -167,9 +182,9 @@ char file_read(file *f, char *buf, size_t count, const char *valid_chars,
     }
 
     if (delims && !delim) {
-        PANIC_FILE(
-            f, "[PARSE_ERROR] Expected delim [%s] to end expression starting "
-            "at %d:%d\n", delims, (int)pos_start.line, (int)pos_start.column
+        PANIC_FILE(f,
+            "[PARSE_ERROR] Expected delim [%s] to end expression starting at "
+            "%d:%d\n", delims, (int)pos_start.line, (int)pos_start.column
         );
     }
 
@@ -182,9 +197,9 @@ int file_expect_char(file *f, const char *chars, int times) {
     file_read(f, 0, times, chars, 0, &count);
     if (count != times) {
         char next = file_peek(f);
-        PANIC_FILE(
-            f, "[PARSE_ERROR] Missing expected character [%s]. Found '%c' "
-            "instead.\n", chars, next
+        PANIC_FILE(f,
+            "[PARSE_ERROR] Missing expected character [%s]. Found '%s' instead."
+            "\n", chars, char_printable(&next)
         );
     }
     return count;
@@ -201,9 +216,10 @@ static void file_expect_string(file *f, const char *str) {
     while (*s) {
         char c = file_char(f);
         if (c != *s) {
-            PANIC_FILE(
-                f, "[PARSE_ERROR] Missing expected character %c of string %s. "
-                "Found %c instead.\n", *s, str, c
+            PANIC_FILE(f,
+                "[PARSE_ERROR] Missing expected character '%s' of string %s. "
+                "Found '%s' instead.\n", char_printable(s), str,
+                char_printable(&c)
             );
         }
         s++;

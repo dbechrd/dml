@@ -3,11 +3,16 @@
 #include "file.h"
 
 typedef enum token_type {
+    TOKEN_UNKNOWN,
     TOKEN_EOF,
     TOKEN_WHITESPACE,
+    TOKEN_NEWLINE,
+    TOKEN_INDENT,
     TOKEN_COMMENT,
-    TOKEN_IDENT,
-    TOKEN_NUMBER,
+    TOKEN_IDENTIFIER,
+    TOKEN_KW_NULL,
+    TOKEN_KW_TRUE,
+    TOKEN_KW_FALSE,
     TOKEN_INT,
     TOKEN_FLOAT,
     TOKEN_STRING,
@@ -19,11 +24,16 @@ typedef enum token_type {
 
 static inline const char *token_type_str(token_type type) {
     switch(type) {
+        case TOKEN_UNKNOWN:      return "????????";
         case TOKEN_EOF:          return "EOF";
-        case TOKEN_IDENT:        return "IDENTIFIER";
         case TOKEN_WHITESPACE:   return "WHITESPACE";
+        case TOKEN_NEWLINE:      return "NEWLINE";
+        case TOKEN_INDENT:       return "INDENT";
         case TOKEN_COMMENT:      return "COMMENT";
-        case TOKEN_NUMBER:       return "NUMBER";
+        case TOKEN_IDENTIFIER:   return "IDENTIFIER";
+        case TOKEN_KW_NULL:      return "KEYWORD";
+        case TOKEN_KW_TRUE:      return "KEYWORD";
+        case TOKEN_KW_FALSE:     return "KEYWORD";
         case TOKEN_INT:          return "INT";
         case TOKEN_FLOAT:        return "FLOAT";
         case TOKEN_STRING:       return "STRING";
@@ -31,7 +41,7 @@ static inline const char *token_type_str(token_type type) {
         case TOKEN_ARRAY_END:    return "ARRAY_END";
         case TOKEN_OBJECT_START: return "OBJECT_START";
         case TOKEN_OBJECT_END:   return "OBJECT_END";
-        default: DLB_ASSERT(0); return 0;
+        default: DLB_ASSERT(!"Unknown token type");  return 0;
     }
 };
 
@@ -47,6 +57,11 @@ typedef struct token {
         //void *buffer;
     } value;
 } token;
+
+typedef struct {
+    token *tokens;
+    u32 index;
+} token_stream;
 
 typedef enum prop_type {
     PROP_NULL,
@@ -100,6 +115,12 @@ typedef struct entity {
     unsigned int uid;
     prop *properties;
 } entity;
+
+//typedef struct entity {
+//    entity_type type;
+//    unsigned int uid;
+//    prop *properties;
+//} entity;
 
 typedef struct scene {
     const char *name;

@@ -1,21 +1,51 @@
-ta_texture:
-  name: "texture_example"
-  test: "First\\\"hi\"\\Second"
-  path: "texture/example.tga"
 ta_entity:
-  name: "Timmy"  # This is entity #1's name
-  age: 42
-  zero: 0
-  negative: -1
-  weight: 0x42f60000(123)
-  latitude: 321.000000
-  city: "San Francisco"
-  numbers: []
-  position: {}
-  _bad_ident: "asdf"
-  #bad_string: "asdfsdf"aa"
-  #numbers: [
-  #  92492, 27745, 37710, 348, 28714, 68388, 18949, 4572, 568654, 654568, 213115
-  #]
-  #position: { x: 1.001, y: 2.002, z: 3.003 }
-  #escape_chars: "foo \"'\\\t\r\n\0 bar"
+  name: "entity_name"
+  material:
+    name: "material_name"
+  mesh:
+    name: "mesh_name"
+    path: "mesh_path"
+  shader:
+    name: "shader_name"
+    path: "shader_path"
+  texture:
+    name: "texture_name"
+    path: "texture_path"
+  transform:
+    position:
+      x: 1.0
+      y: 2.0
+      z: 3.0
+    rotation:
+      x: 1.0
+      y: 2.0
+      z: 3.0
+      w: 4.0
+    scale:
+      x: 1.0
+      y: 2.0
+      z: 3.0
+#ta_texture:
+#  name: "texture_example"
+#  test: "First\\\"hi\"\\Second"
+#  path: "texture/example.tga"
+#ta_entity:
+#  name: "Timmy"  # This is entity #1's name
+#  age: 42
+#  zero: 0
+#  negative: -1
+#  active: true
+#  inactive: false
+#  empty: null
+#  weight: 0x42f60000(123)
+#  latitude: 321.000000
+#  city: "San Francisco"
+#  numbers: []
+#  position: {}
+#  #_bad_ident: "asdf"
+#  #bad_string: "asdfsdf"aa"
+#  #numbers: [
+#  #  92492, 27745, 37710, 348, 28714, 68388, 18949, 4572, 568654, 654568, 213115
+#  #]
+#  #position: { x: 1.001, y: 2.002, z: 3.003 }
+#  #escape_chars: "foo \"'\\\t\r\n\0 bar"
