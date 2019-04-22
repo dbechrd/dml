@@ -1,7 +1,7 @@
 #include "scene.h"
 #include "file.h"
 #include "parse.h"
-//#include "prop.h"
+#include "object.h"
 #include "symbol.h"
 #include "dlb_memory.h"
 #include "dlb_vector.h"
@@ -20,21 +20,16 @@
 #define DLB_ARENA_IMPLEMENTATION
 #include "dlb_arena.h"
 
-entity *entity_create(scene *scn, const char *name, int age, float weight,
-                      const char *height, const char *city) {
-    entity *e = entity_init(scn, ENTITY_GENERAL, 0);
-    prop_set_string(e, intern(CSTR("name")), name);
-    prop_set_int(e, intern(CSTR("age")), age);
-    prop_set_float(e, intern(CSTR("weight")), weight);
-    prop_set_string(e, intern(CSTR("height")), height);
-    prop_set_string(e, intern(CSTR("city")), city);
+ta_entity *entity_create(scene *scn, const char *name) {
+    ta_entity *e = scene_entity_init(scn, ENTITY_DEFAULT, 0);
+    e->name = name;
     return e;
 }
 
 void write_scene(const char *filename) {
     scene *scene = scene_init("test scene");
-    entity_create(scene, "Timmy", 42, 123.0f, "5ft 6in", "San Francisco");
-    entity_create(scene, "Bobby", 24, 321.0f, "6ft 5in", "Fran Sansisco");
+    entity_create(scene, "Timmy");
+    entity_create(scene, "Bobby");
 
     printf("[WRITE: %s]\n", filename);
     scene_print(scene);

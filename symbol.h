@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #define CSTR(s) (s), sizeof(s) - 1
+#define INTERN(s) intern(CSTR(s))
 
 extern const char *sym_entity;
 
