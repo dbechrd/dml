@@ -390,6 +390,16 @@ bool token_stream_peek(token_stream *stream, token **tok)
     return false;
 }
 
+bool token_stream_next(token_stream *stream, token **tok)
+{
+    if (stream->index < dlb_vec_len(stream->tokens)) {
+        *tok = &stream->tokens[stream->index];
+        stream->index++;
+        return true;
+    }
+    return false;
+}
+
 token *token_stream_read(token_stream *stream)
 {
     token *tok = 0;
@@ -457,13 +467,95 @@ float token_stream_float(token_stream *stream,
     return tok->value.as_float;
 }
 
-ta_entity *scene_parse_entity(scene *scn, token_stream *stream)
+ta_entity *scene_parse_entity(scene *scn, token_stream *stream, int start_level)
 {
     ta_entity *entity = dlb_vec_alloc(scn->entities);
     entity_init(entity);
 
     // TODO: Find properties by name and set them this way
-    ta_mesh *mesh = obj_field_find(entity->object, INTERN("mesh"));
+    //ta_mesh *mesh = obj_field_find(entity->object, INTERN("mesh"));
+
+    // Tokens on current line
+    token *toks[16] = { 0 };
+    int tok = 0;
+
+    // Objects in current level
+    int indents[16] = { 0 };
+    const ta_object **obj[16] = { 0 };
+    int level = start_level;
+    DLB_ASSERT(start_level == 0);  // TODO: Handle indentation better?
+
+    // Current line indent counter
+    int indent = 0;
+
+    // Current field pointer
+    ta_object_field *field = 0;
+
+    // Entity header
+    token_stream_identifier(stream, sym_entity);
+    token_stream_expect(stream, TOKEN_NEWLINE);
+    obj[level] = &entity->object;
+    indents[level] = indent;
+    level++;
+
+    // Entity properties
+    while (level && token_stream_next(stream, &toks[tok])) {
+        switch (toks[tok]->type) {
+            case TOKEN_IDENTIFIER: {
+                if (tok == 0) {
+                    level = 0;
+                } else {
+                    DLB_ASSERT(toks[tok-1]->type == TOKEN_INDENT);
+                    for (int i = level; i >= 0; i--) {
+                        if (indent >= indents[i]) {
+                            break;
+                        }
+                        level--;
+                    }
+                    indents[level] = indent;
+
+                    field = obj_field_find(*obj[level-1], toks[tok]->value.string);
+                    if (field->type == FIELD_OBJECT) {
+                        void *fp = ((u8 *)obj[level-1] + field->offset);
+                        if (field->name == sym_material) {
+                            ta_material *mat = fp;
+                            material_init(mat);
+                        } else {
+                            DLB_ASSERT(!"TODO: Handle other field types");
+                        }
+                        obj[level] = fp;
+                        level++;
+                    }
+                }
+                break;
+            } case TOKEN_NEWLINE: {
+                indent = 0;
+                tok = 0;
+                field = 0;
+                break;
+            } case TOKEN_INDENT: {
+                indent++;
+                break;
+            } case TOKEN_WHITESPACE: {
+                break;
+            } case TOKEN_STRING: {
+                DLB_ASSERT(level);
+                DLB_ASSERT(field->type == FIELD_STRING);
+                const char **fp = (void *)((u8 *)obj[level-1] + field->offset);
+                *fp = toks[tok]->value.string;
+                break;
+            } case TOKEN_FLOAT: {
+                DLB_ASSERT(level);
+                DLB_ASSERT(field->type == FIELD_FLOAT);
+                float *fp = (void *)((u8 *)obj[level-1] + field->offset);
+                *fp = toks[tok]->value.as_float;
+                break;
+            } default: {
+                UNUSED(obj);
+            }
+        }
+        tok++;
+    }
 
     token_stream_identifier(stream, sym_entity);
 
@@ -542,8 +634,9 @@ void scene_parse(scene *scn, token *tokens)
     token *tok = 0;
 #if 1
     while (token_stream_peek(stream, &tok)) {
+        DLB_ASSERT(tok->type == TOKEN_IDENTIFIER);
         if (tok->value.string == sym_entity) {
-            scene_parse_entity(scn, stream);
+            scene_parse_entity(scn, stream, 0);
         } else if (tok->type == TOKEN_COMMENT) {
             token_stream_expect(stream, TOKEN_COMMENT);
             token_stream_expect(stream, TOKEN_NEWLINE);

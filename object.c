@@ -14,23 +14,36 @@ const char *ta_object_type_str(ta_object_type type) {
     }
 };
 
-void obj_field_add(ta_object *obj, const char *name, u32 offset)
+void obj_field_add(ta_object *obj, ta_object_field_type type, const char *name,
+    u32 offset)
 {
     ta_object_field *fo = dlb_vec_alloc(obj->fields);
+    fo->type = type;
     fo->name = name;
     fo->offset = offset;
 }
 
-void *obj_field_find(const ta_object *obj, const char *name)
+ta_object_field *obj_field_find(const ta_object *obj, const char *name)
 {
-    void *ptr = 0;
+    ta_object_field *field = 0;
     for (ta_object_field *f = obj->fields; f != dlb_vec_end(obj->fields); f++) {
         if (f->name == name) {
-            ptr = (u8 *)obj + f->offset;
+            field = f;
             break;
         }
     }
-    return ptr;
+    return field;
+}
+
+void material_init(ta_material *material)
+{
+    static ta_object obj = { 0 };
+    if (!obj.type) {
+        obj.type = OBJ_MATERIAL;
+        obj.name = INTERN("ta_material");
+        obj_field_add(&obj, FIELD_STRING, INTERN("name"), OFFSETOF(ta_material, name));
+    }
+    material->object = &obj;
 }
 
 void entity_init(ta_entity *entity)
@@ -38,13 +51,13 @@ void entity_init(ta_entity *entity)
     static ta_object obj = { 0 };
     if (!obj.type) {
         obj.type = OBJ_ENTITY;
-        obj.name = INTERN("entity");
-        obj_field_add(&obj, INTERN("name"),      OFFSETOF(ta_entity, name));
-        obj_field_add(&obj, INTERN("material"),  OFFSETOF(ta_entity, material));
-        obj_field_add(&obj, INTERN("mesh"),      OFFSETOF(ta_entity, mesh));
-        obj_field_add(&obj, INTERN("shader"),    OFFSETOF(ta_entity, shader));
-        obj_field_add(&obj, INTERN("texture"),   OFFSETOF(ta_entity, texture));
-        obj_field_add(&obj, INTERN("transform"), OFFSETOF(ta_entity, transform));
+        obj.name = INTERN("ta_entity");
+        obj_field_add(&obj, FIELD_STRING, INTERN("name"),      OFFSETOF(ta_entity, name));
+        obj_field_add(&obj, FIELD_OBJECT, INTERN("material"),  OFFSETOF(ta_entity, material));
+        obj_field_add(&obj, FIELD_OBJECT, INTERN("mesh"),      OFFSETOF(ta_entity, mesh));
+        obj_field_add(&obj, FIELD_OBJECT, INTERN("shader"),    OFFSETOF(ta_entity, shader));
+        obj_field_add(&obj, FIELD_OBJECT, INTERN("texture"),   OFFSETOF(ta_entity, texture));
+        obj_field_add(&obj, FIELD_OBJECT, INTERN("transform"), OFFSETOF(ta_entity, transform));
     }
     entity->object = &obj;
 }
