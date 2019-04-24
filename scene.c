@@ -7,12 +7,6 @@
 #include "dlb_vector.h"
 #include "dlb_hash.h"
 
-dlb_hash type_loaders;
-void init_type_loaders() {
-    dlb_hash_init(&type_loaders, DLB_HASH_STRING, "Type Loaders", 16);
-    //dlb_hash_insert(&type_loaders, dlb_symbol_hash(sym_entity), 0);
-};
-
 scene *scene_init(const char *name) {
     scene *scn = dlb_calloc(1, sizeof(*scn));
     scn->name = name;
@@ -268,7 +262,7 @@ static token *scene_tokenize(file *f, bool ignore_whitespace)
     return tokens;
 }
 
-static void token_print(token *tokens)
+static void tokens_print(token *tokens)
 {
     for (token *tok = tokens; tok != dlb_vec_end(tokens); tok++) {
         switch (tok->type) {
@@ -329,7 +323,7 @@ static void token_print(token *tokens)
     printf("\n");
 }
 
-static void token_print_debug(token *tokens)
+static void tokens_print_debug(token *tokens)
 {
     for (token *tok = tokens; tok != dlb_vec_end(tokens); tok++) {
         printf("%-16s", token_type_str(tok->type));
@@ -402,235 +396,11 @@ bool token_stream_next(token_stream *stream, token **tok)
     return false;
 }
 
-token *token_stream_read(token_stream *stream)
-{
-    token *tok = 0;
-    if (stream->index < dlb_vec_len(stream->tokens)) {
-        tok = &stream->tokens[stream->index];
-        stream->index++;
-    }
-    return tok;
-}
-
-token *token_stream_expect(token_stream *stream, token_type type)
-{
-    token *tok = token_stream_read(stream);
-    if (!tok) {
-        PANIC("Stream has run out of tokens.\n");
-    } else if (tok->type != type) {
-        PANIC("Expected token %s, found %s instead.\n",
-            token_type_str(type), token_type_str(tok->type));
-    }
-    return tok;
-}
-
-void token_stream_indent(token_stream *stream)
-{
-    token_stream_expect(stream, TOKEN_NEWLINE);
-    stream->level++;
-}
-
-void token_stream_unindent(token_stream *stream)
-{
-    DLB_ASSERT(stream->level > 0);
-    stream->level--;
-}
-
-token *token_stream_identifier(token_stream *stream, const char *name)
-{
-    for (int i = 0; i < stream->level; i++) {
-        token_stream_expect(stream, TOKEN_INDENT);
-    }
-    token *tok = token_stream_expect(stream, TOKEN_IDENTIFIER);
-    if (tok->value.string != name) {
-        PANIC("Expected child node '%s', found '%s' instead.\n", name,
-            tok->value.string);
-    }
-    return tok;
-}
-
-const char *token_stream_string(token_stream *stream,
-    const char *name)
-{
-    token_stream_identifier(stream, name);
-    token_stream_expect(stream, TOKEN_WHITESPACE);
-    token *tok = token_stream_expect(stream, TOKEN_STRING);
-    token_stream_expect(stream, TOKEN_NEWLINE);
-    return tok->value.string;
-}
-
-float token_stream_float(token_stream *stream,
-    const char *name)
-{
-    token_stream_identifier(stream, name);
-    token_stream_expect(stream, TOKEN_WHITESPACE);
-    token *tok = token_stream_expect(stream, TOKEN_FLOAT);
-    token_stream_expect(stream, TOKEN_NEWLINE);
-    return tok->value.as_float;
-}
-
 typedef struct {
     ta_object_type type;
     void *ptr;
     int indent;
 } obj_ptr;
-
-#if 0
-ta_entity *scene_parse_entity(scene *scn, token_stream *stream)
-{
-    ta_entity *entity = dlb_vec_alloc(scn->entities);
-    entity->obj_type = OBJ_TA_ENTITY;
-    //entity_init(entity);
-
-    // TODO: Find properties by name and set them this way
-    //ta_mesh *mesh = obj_field_find(entity->object, INTERN("mesh"));
-
-    // Tokens on current line
-    token *tok = 0;
-
-    // Objects in current level
-    obj_ptr stack[16] = { 0 };
-    int level = 0;
-
-    // Current line indent counter
-    int indent = 0;
-
-    // TODO: Refactor this into the loop, it's the same as everything else
-    // Entity header
-    //token_stream_identifier(stream, INTERN(STRING(ta_entity)));
-    //token_stream_expect(stream, TOKEN_NEWLINE);
-    //stack[level].type = entity->obj_type;
-    //stack[level].ptr = entity;
-    //stack[level].indent = indent;
-
-    // Entity properties
-    while (token_stream_next(stream, &tok)) {
-        switch (tok->type) {
-            case TOKEN_IDENTIFIER: {
-                for (int i = level; i >= 0; i--) {
-                    if (indent >= stack[i].indent) {
-                        break;
-                    }
-                    level--;
-                }
-                stack[level].indent = indent;
-
-                ta_object_type type = OBJ_NULL;
-                void *ptr = 0;
-                if (level) {
-                    ta_object_field *field = obj_field_find(stack[level-1].type, tok->value.string);
-                    type = field->type;
-                    ptr = ((u8 *)stack[level-1].ptr + field->offset);
-                } else {
-                    ta_object *obj = dlb_hash_search(&tg_objects_by_name, tok->value.string, tok->length);
-                    DLB_ASSERT(obj);
-                    DLB_ASSERT(obj->type);
-                    type = obj->type;
-                    ptr = scene_obj_init(scn, type, 0);
-                }
-                ta_object *obj = &tg_objects[type];
-                stack[level].type = obj->type;
-                stack[level].ptr = ptr;
-                level++;
-                break;
-            } case TOKEN_NEWLINE: {
-                indent = 0;
-                tok = 0;
-                break;
-            } case TOKEN_INDENT: {
-                indent++;
-                break;
-            } case TOKEN_WHITESPACE: {
-                break;
-            } case TOKEN_STRING: {
-                DLB_ASSERT(level);
-                DLB_ASSERT(stack[level-1].type == OBJ_STRING);
-                const char **fp = stack[level-1].ptr;
-                *fp = tok->value.string;
-                break;
-            } case TOKEN_FLOAT: {
-                DLB_ASSERT(level);
-                DLB_ASSERT(stack[level-1].type == OBJ_FLOAT);
-                float *fp = stack[level-1].ptr;
-                *fp = tok->value.as_float;
-                break;
-            } default: {
-                DLB_ASSERT(!"Unhandled token type");
-            }
-        }
-        tok++;
-    }
-
-#if 0
-    token_stream_identifier(stream, sym_entity);
-
-    token_stream_indent(stream);
-    {
-        entity->name = token_stream_string(stream, sym_name);
-
-        token_stream_identifier(stream, sym_material);
-        token_stream_indent(stream);
-        {
-            entity->material.name = token_stream_string(stream, sym_name);
-        }
-        token_stream_unindent(stream);
-        token_stream_identifier(stream, sym_mesh);
-        token_stream_indent(stream);
-        {
-            entity->mesh.name = token_stream_string(stream, sym_name);
-            entity->mesh.path = token_stream_string(stream, sym_path);
-        }
-        token_stream_unindent(stream);
-        token_stream_identifier(stream, sym_shader);
-        token_stream_indent(stream);
-        {
-            entity->shader.name = token_stream_string(stream, sym_name);
-            entity->shader.path = token_stream_string(stream, sym_path);
-        }
-        token_stream_unindent(stream);
-        token_stream_identifier(stream, sym_texture);
-        token_stream_indent(stream);
-        {
-            entity->texture.name = token_stream_string(stream, sym_name);
-            entity->texture.path = token_stream_string(stream, sym_path);
-        }
-        token_stream_unindent(stream);
-        token_stream_identifier(stream, sym_transform);
-        token_stream_indent(stream);
-        {
-            token_stream_identifier(stream, sym_position);
-            token_stream_indent(stream);
-            {
-                entity->transform.position.x = token_stream_float(stream, sym_x);
-                entity->transform.position.y = token_stream_float(stream, sym_y);
-                entity->transform.position.z = token_stream_float(stream, sym_z);
-            }
-            token_stream_unindent(stream);
-            token_stream_identifier(stream, sym_rotation);
-            token_stream_indent(stream);
-            {
-                entity->transform.rotation.x = token_stream_float(stream, sym_x);
-                entity->transform.rotation.y = token_stream_float(stream, sym_y);
-                entity->transform.rotation.z = token_stream_float(stream, sym_z);
-                entity->transform.rotation.w = token_stream_float(stream, sym_w);
-            }
-            token_stream_unindent(stream);
-            token_stream_identifier(stream, sym_scale);
-            token_stream_indent(stream);
-            {
-                entity->transform.scale.x = token_stream_float(stream, sym_x);
-                entity->transform.scale.y = token_stream_float(stream, sym_y);
-                entity->transform.scale.z = token_stream_float(stream, sym_z);
-            }
-        }
-        token_stream_unindent(stream);
-    }
-    token_stream_unindent(stream);
-#endif
-
-    return entity;
-}
-#endif
 
 void scene_parse(scene *scn, token *tokens)
 {
@@ -716,8 +486,8 @@ scene *scene_load(file *f)
 {
     scene *scn = scene_init(f->filename);
     token *tokens = scene_tokenize(f, true);
-    token_print(tokens);
-    token_print_debug(tokens);
+    tokens_print(tokens);
+    tokens_print_debug(tokens);
     scene_parse(scn, tokens);
     dlb_vec_free(tokens);
     return scn;
@@ -767,71 +537,3 @@ void *scene_obj_init(scene *scn, ta_object_type type, unsigned int uid)
 
     return NULL;
 }
-
-#if 0
-prop *prop_find(entity *e, const char *name) {
-    bool found = false;
-    prop *p = e->properties;
-    while (p != dlb_vec_end(e->properties)) {
-        if (p->name == name) {
-            found = true;
-            break;
-        }
-        p++;
-    }
-    return found ? p : NULL;
-}
-
-prop *prop_create(entity *e, const char *name) {
-    prop *p = prop_find(e, name);
-    if (p != NULL) {
-        return NULL;  // Prevent duplicates
-    }
-
-    p = dlb_vec_alloc(e->properties);
-    p->name = name;
-    return p;
-}
-
-void prop_set_int(entity *e, const char *name, int value) {
-    prop_clear(e, name);
-    prop *p = prop_create(e, name);
-    p->type = PROP_INT;
-    p->value.as_int = value;
-}
-
-void prop_set_float(entity *e, const char *name, float value) {
-    prop_clear(e, name);
-    prop *p = prop_create(e, name);
-    p->type = PROP_FLOAT;
-    p->value.as_float = value;
-}
-
-void prop_set_char(entity *e, const char *name, char value) {
-    prop_clear(e, name);
-    prop *p = prop_create(e, name);
-    p->type = PROP_CHAR;
-    p->value.as_char = value;
-}
-
-void prop_set_string(entity *e, const char *name, const char *value) {
-    prop_clear(e, name);
-    prop *p = prop_create(e, name);
-    p->type = PROP_STRING;
-    p->length = strlen(value);
-    DLB_ASSERT(p->length <= MAX_STRING_LEN);
-    p->value.string = value;
-}
-
-void prop_clear(entity *e, const char *name) {
-    prop *p = prop_find(e, name);
-    if (p) {
-        // NOTE: Don't free interned strings because they might be shared
-        if (p->length > 0 && p->type != PROP_STRING) {
-            free(p->value.buffer);
-        }
-        memset(p, 0, sizeof(*p));
-        p->name = "[PROPERTY CLEARED]";
-    }
-}
-#endif

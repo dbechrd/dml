@@ -75,7 +75,6 @@ int main(int argc, char *argv[]) {
     tests();
     init_symbols();
     obj_register();
-    init_type_loaders();
 
     //const char *filename = "data/scene.dml";
     //write_scene(filename);

@@ -74,26 +74,9 @@ typedef struct scene {
     ta_texture *textures;
 } scene;
 
-void init_type_loaders();
-
 scene *scene_init(const char *name);
 void scene_free(scene *scn);
 void scene_print(scene *scn);
 void scene_save(file *f, scene *scn);
 scene *scene_load(file *f);
 void *scene_obj_init(scene *scn, ta_object_type type, unsigned int uid);
-
-#if 0
-void entity_free(entity *e);
-void entity_print(FILE *hnd, entity *e);
-void entity_save(file *f, entity *e);
-void entity_load(file *f, scene *scn, entity_type type, unsigned int uid);
-
-prop *prop_find(entity *e, const char *name);
-prop *prop_create(entity *e, const char *name);
-void prop_set_int(entity *e, const char *name, int value);
-void prop_set_float(entity *e, const char *name, float value);
-void prop_set_char(entity *e, const char *name, char value);
-void prop_set_string(entity *e, const char *name, const char *value);
-void prop_clear(entity *e, const char *name);
-#endif
