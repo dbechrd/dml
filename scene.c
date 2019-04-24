@@ -31,10 +31,12 @@ void scene_free(scene *scn) {
 
 void scene_print(scene *scn) {
     // Print loaded entities
-    printf("name: %s\n", scn->name);
+    printf("Scene name: %s\n", scn->name);
+    printf("Entities:\n");
     for (ta_entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
         entity_print(stdout, e);
     }
+    // TODO: Print materials, textures, etc.
     fflush(stdout);
 }
 
@@ -467,71 +469,73 @@ float token_stream_float(token_stream *stream,
     return tok->value.as_float;
 }
 
-ta_entity *scene_parse_entity(scene *scn, token_stream *stream, int start_level)
+typedef struct {
+    ta_object_type type;
+    void *ptr;
+    int indent;
+} obj_ptr;
+
+#if 0
+ta_entity *scene_parse_entity(scene *scn, token_stream *stream)
 {
     ta_entity *entity = dlb_vec_alloc(scn->entities);
-    entity_init(entity);
+    entity->obj_type = OBJ_TA_ENTITY;
+    //entity_init(entity);
 
     // TODO: Find properties by name and set them this way
     //ta_mesh *mesh = obj_field_find(entity->object, INTERN("mesh"));
 
     // Tokens on current line
-    token *toks[16] = { 0 };
-    int tok = 0;
+    token *tok = 0;
 
     // Objects in current level
-    int indents[16] = { 0 };
-    const ta_object **obj[16] = { 0 };
-    int level = start_level;
-    DLB_ASSERT(start_level == 0);  // TODO: Handle indentation better?
+    obj_ptr stack[16] = { 0 };
+    int level = 0;
 
     // Current line indent counter
     int indent = 0;
 
-    // Current field pointer
-    ta_object_field *field = 0;
-
+    // TODO: Refactor this into the loop, it's the same as everything else
     // Entity header
-    token_stream_identifier(stream, sym_entity);
-    token_stream_expect(stream, TOKEN_NEWLINE);
-    obj[level] = &entity->object;
-    indents[level] = indent;
-    level++;
+    //token_stream_identifier(stream, INTERN(STRING(ta_entity)));
+    //token_stream_expect(stream, TOKEN_NEWLINE);
+    //stack[level].type = entity->obj_type;
+    //stack[level].ptr = entity;
+    //stack[level].indent = indent;
 
     // Entity properties
-    while (level && token_stream_next(stream, &toks[tok])) {
-        switch (toks[tok]->type) {
+    while (token_stream_next(stream, &tok)) {
+        switch (tok->type) {
             case TOKEN_IDENTIFIER: {
-                if (tok == 0) {
-                    level = 0;
-                } else {
-                    DLB_ASSERT(toks[tok-1]->type == TOKEN_INDENT);
-                    for (int i = level; i >= 0; i--) {
-                        if (indent >= indents[i]) {
-                            break;
-                        }
-                        level--;
+                for (int i = level; i >= 0; i--) {
+                    if (indent >= stack[i].indent) {
+                        break;
                     }
-                    indents[level] = indent;
-
-                    field = obj_field_find(*obj[level-1], toks[tok]->value.string);
-                    if (field->type == FIELD_OBJECT) {
-                        void *fp = ((u8 *)obj[level-1] + field->offset);
-                        if (field->name == sym_material) {
-                            ta_material *mat = fp;
-                            material_init(mat);
-                        } else {
-                            DLB_ASSERT(!"TODO: Handle other field types");
-                        }
-                        obj[level] = fp;
-                        level++;
-                    }
+                    level--;
                 }
+                stack[level].indent = indent;
+
+                ta_object_type type = OBJ_NULL;
+                void *ptr = 0;
+                if (level) {
+                    ta_object_field *field = obj_field_find(stack[level-1].type, tok->value.string);
+                    type = field->type;
+                    ptr = ((u8 *)stack[level-1].ptr + field->offset);
+                } else {
+                    ta_object *obj = dlb_hash_search(&tg_objects_by_name, tok->value.string, tok->length);
+                    DLB_ASSERT(obj);
+                    DLB_ASSERT(obj->type);
+                    type = obj->type;
+                    ptr = scene_obj_init(scn, type, 0);
+                }
+                ta_object *obj = &tg_objects[type];
+                stack[level].type = obj->type;
+                stack[level].ptr = ptr;
+                level++;
                 break;
             } case TOKEN_NEWLINE: {
                 indent = 0;
                 tok = 0;
-                field = 0;
                 break;
             } case TOKEN_INDENT: {
                 indent++;
@@ -540,23 +544,24 @@ ta_entity *scene_parse_entity(scene *scn, token_stream *stream, int start_level)
                 break;
             } case TOKEN_STRING: {
                 DLB_ASSERT(level);
-                DLB_ASSERT(field->type == FIELD_STRING);
-                const char **fp = (void *)((u8 *)obj[level-1] + field->offset);
-                *fp = toks[tok]->value.string;
+                DLB_ASSERT(stack[level-1].type == OBJ_STRING);
+                const char **fp = stack[level-1].ptr;
+                *fp = tok->value.string;
                 break;
             } case TOKEN_FLOAT: {
                 DLB_ASSERT(level);
-                DLB_ASSERT(field->type == FIELD_FLOAT);
-                float *fp = (void *)((u8 *)obj[level-1] + field->offset);
-                *fp = toks[tok]->value.as_float;
+                DLB_ASSERT(stack[level-1].type == OBJ_FLOAT);
+                float *fp = stack[level-1].ptr;
+                *fp = tok->value.as_float;
                 break;
             } default: {
-                UNUSED(obj);
+                DLB_ASSERT(!"Unhandled token type");
             }
         }
         tok++;
     }
 
+#if 0
     token_stream_identifier(stream, sym_entity);
 
     token_stream_indent(stream);
@@ -621,9 +626,11 @@ ta_entity *scene_parse_entity(scene *scn, token_stream *stream, int start_level)
         token_stream_unindent(stream);
     }
     token_stream_unindent(stream);
+#endif
 
     return entity;
 }
+#endif
 
 void scene_parse(scene *scn, token *tokens)
 {
@@ -631,45 +638,78 @@ void scene_parse(scene *scn, token *tokens)
     token_stream *stream = &stream_;
     stream->tokens = tokens;
 
+    // Objects in current level
+    obj_ptr stack[16] = { 0 };
+    int level = 0;   // Current level of indentation
+    int indent = 0;  // Current line indent counter
+
     token *tok = 0;
-#if 1
-    while (token_stream_peek(stream, &tok)) {
-        DLB_ASSERT(tok->type == TOKEN_IDENTIFIER);
-        if (tok->value.string == sym_entity) {
-            scene_parse_entity(scn, stream, 0);
-        } else if (tok->type == TOKEN_COMMENT) {
-            token_stream_expect(stream, TOKEN_COMMENT);
-            token_stream_expect(stream, TOKEN_NEWLINE);
-        } else if (tok->type == TOKEN_EOF) {
-            break;
-        } else {
-            PANIC("Unexpected token %s\n", token_type_str(tok->type));
-        }
-    }
-#else
-    while (token_stream_read(&stream, &tok)) {
-        // TODO: Build a scene, use a state machine to track when inside of
-        //       arrays, objects.
-        switch (state) {
-            case PARSE_INIT: {
-                tok = token_stream_expect(stream, TOKEN_IDENTIFIER);
-                // TODO: Register type names (e.g. entity) in lookup table that maps
-                //       them to their respective loader
-                if (tok->value.string == sym_entity) {
-                    scene_parse_entity(stream);
-                } else if (tok->value.string == sym_texture) {
-                    //entity_load(f, scn, ENTITY_TEXTURE, uid);
-                } else if (tok->value.string == sym_material) {
-                    //entity_load(f, scn, ENTITY_MATERIAL, uid);
-                } else if (tok->value.string == sym_mesh) {
-                    //entity_load(f, scn, ENTITY_MESH, uid);
-                } else {
-                    DLB_ASSERT(!"Unexpected identifier"); // wtf?
+    while (token_stream_next(stream, &tok)) {
+        switch (tok->type) {
+            case TOKEN_EOF: {
+                break;
+            } case TOKEN_IDENTIFIER: {
+                for (int i = level; i >= 0; i--) {
+                    if (indent >= stack[i].indent) {
+                        break;
+                    }
+                    level--;
                 }
+                stack[level].indent = indent;
+
+                if (level) {
+                    ta_object_field *field = obj_field_find(stack[level-1].type, tok->value.string);
+                    DLB_ASSERT(field);
+                    DLB_ASSERT(field->type);
+                    stack[level].type = field->type;
+                    stack[level].ptr = ((u8 *)stack[level-1].ptr + field->offset);
+                } else {
+                    ta_object *obj = dlb_hash_search(&tg_objects_by_name, tok->value.string, tok->length);
+                    DLB_ASSERT(obj);
+                    DLB_ASSERT(obj->type);
+                    stack[level].type = obj->type;
+                    stack[level].ptr = scene_obj_init(scn, obj->type, 0);
+                }
+                level++;
+                break;
+            } case TOKEN_WHITESPACE: {
+                break;
+            } case TOKEN_NEWLINE: {
+                indent = 0;
+                tok = 0;
+                break;
+            } case TOKEN_INDENT: {
+                indent++;
+                break;
+            } case TOKEN_COMMENT: {
+                break;
+            } case TOKEN_INT: {
+                DLB_ASSERT(level);
+                DLB_ASSERT(stack[level-1].type == OBJ_INT);
+                int *fp = stack[level-1].ptr;
+                *fp = tok->value.as_int;
+                level--;
+                break;
+            } case TOKEN_FLOAT: {
+                DLB_ASSERT(level);
+                DLB_ASSERT(stack[level-1].type == OBJ_FLOAT);
+                float *fp = stack[level-1].ptr;
+                *fp = tok->value.as_float;
+                level--;
+                break;
+            } case TOKEN_STRING: {
+                DLB_ASSERT(level);
+                DLB_ASSERT(stack[level-1].type == OBJ_STRING);
+                const char **fp = stack[level-1].ptr;
+                *fp = tok->value.string;
+                level--;
+                break;
+            } default: {
+                PANIC("Unexpected token %s\n", token_type_str(tok->type));
             }
         }
+        tok++;
     }
-#endif
 }
 
 scene *scene_load(file *f)
@@ -683,16 +723,49 @@ scene *scene_load(file *f)
     return scn;
 }
 
-ta_entity *scene_entity_init(scene *scn, ta_entity_type type, unsigned int uid)
+void *scene_obj_init(scene *scn, ta_object_type type, unsigned int uid)
 {
     if (uid) {
         DLB_ASSERT(uid >= scn->next_uid);
         scn->next_uid = uid;
     }
-    ta_entity *e = dlb_vec_alloc(scn->entities);
-    e->type = type;
-    e->uid = scn->next_uid++;
-    return e;
+
+    switch (type) {
+        case OBJ_TA_ENTITY: {
+            ta_entity *ptr = dlb_vec_alloc(scn->entities);
+            ptr->obj_type = type;
+            ptr->uid = scn->next_uid++;
+            return ptr;
+        } case OBJ_TA_MATERIAL: {
+            ta_material *ptr = dlb_vec_alloc(scn->materials);
+            ptr->obj_type = type;
+            ptr->uid = scn->next_uid++;
+            return ptr;
+            break;
+        } case OBJ_TA_MESH: {
+            ta_mesh *ptr = dlb_vec_alloc(scn->meshes);
+            ptr->obj_type = type;
+            ptr->uid = scn->next_uid++;
+            return ptr;
+            break;
+        } case OBJ_TA_SHADER: {
+            ta_shader *ptr = dlb_vec_alloc(scn->shaders);
+            ptr->obj_type = type;
+            ptr->uid = scn->next_uid++;
+            return ptr;
+            break;
+        } case OBJ_TA_TEXTURE: {
+            ta_texture *ptr = dlb_vec_alloc(scn->textures);
+            ptr->obj_type = type;
+            ptr->uid = scn->next_uid++;
+            return ptr;
+            break;
+        } default: {
+            DLB_ASSERT(!"Cannot initialize this type as a standalone object");
+        }
+    }
+
+    return NULL;
 }
 
 #if 0

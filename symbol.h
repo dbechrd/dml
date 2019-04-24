@@ -7,8 +7,8 @@
 #define CSTR(s) (s), sizeof(s) - 1
 #define INTERN(s) intern(CSTR(s))
 
+#if 0
 extern const char *sym_entity;
-
 extern const char *sym_name;
 extern const char *sym_material;
 extern const char *sym_mesh;
@@ -23,6 +23,7 @@ extern const char *sym_y;
 extern const char *sym_z;
 extern const char *sym_w;
 extern const char *sym_path;
+#endif
 
 extern const char *sym_kw_null;
 extern const char *sym_kw_true;

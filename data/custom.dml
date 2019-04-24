@@ -1,16 +1,5 @@
 ta_entity:
   name: "entity_name"
-  material:
-    name: "material_name"
-  mesh:
-    name: "mesh_name"
-    path: "mesh_path"
-  shader:
-    name: "shader_name"
-    path: "shader_path"
-  texture:
-    name: "texture_name"
-    path: "texture_path"
   transform:
     position:
       x: 1.0
@@ -25,6 +14,17 @@ ta_entity:
       x: 1.0
       y: 2.0
       z: 3.0
+ta_material:
+  name: "material_name"
+ta_mesh:
+  name: "mesh_name"
+  path: "mesh_path"
+ta_shader:
+  name: "shader_name"
+  path: "shader_path"
+ta_texture:
+  name: "texture_name"
+  path: "texture_path"
 #ta_texture:
 #  name: "texture_example"
 #  test: "First\\\"hi\"\\Second"

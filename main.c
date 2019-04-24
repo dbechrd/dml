@@ -21,7 +21,8 @@
 #include "dlb_arena.h"
 
 ta_entity *entity_create(scene *scn, const char *name) {
-    ta_entity *e = scene_entity_init(scn, ENTITY_DEFAULT, 0);
+    ta_entity *e = scene_obj_init(scn, OBJ_TA_ENTITY, 0);
+    e->type = ENTITY_DEFAULT;
     e->name = name;
     return e;
 }
@@ -73,6 +74,7 @@ int main(int argc, char *argv[]) {
     dlb_assert_handler = assert_handler;
     tests();
     init_symbols();
+    obj_register();
     init_type_loaders();
 
     //const char *filename = "data/scene.dml";

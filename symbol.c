@@ -12,8 +12,8 @@
 //       hasn't been necessary yet, so I'm not going to do it preemptively.
 static dlb_hash symbol_table;
 
+#if 0
 const char *sym_entity;
-
 const char *sym_name;
 const char *sym_material;
 const char *sym_mesh;
@@ -28,6 +28,7 @@ const char *sym_y;
 const char *sym_z;
 const char *sym_w;
 const char *sym_path;
+#endif
 
 const char *sym_kw_null;
 const char *sym_kw_true;
@@ -61,6 +62,7 @@ void init_symbols() {
     sym_kw_true     = intern(CSTR(KEYWORD_TRUE));
     sym_kw_false    = intern(CSTR(KEYWORD_FALSE));
 
+#if 0
     sym_transform   = intern(CSTR("ta_transform"));
     sym_texture     = intern(CSTR("ta_texture"));
     sym_material    = intern(CSTR("ta_material"));
@@ -82,6 +84,7 @@ void init_symbols() {
     sym_z           = intern(CSTR("z"));
     sym_w           = intern(CSTR("w"));
     sym_path        = intern(CSTR("path"));
+#endif
 
 #if 0
     sym_int         = intern(CSTR("int32"));

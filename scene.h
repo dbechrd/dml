@@ -68,6 +68,10 @@ typedef struct scene {
     const char *name;
     u32 next_uid;
     ta_entity *entities;
+    ta_material *materials;
+    ta_mesh *meshes;
+    ta_shader *shaders;
+    ta_texture *textures;
 } scene;
 
 void init_type_loaders();
@@ -77,7 +81,7 @@ void scene_free(scene *scn);
 void scene_print(scene *scn);
 void scene_save(file *f, scene *scn);
 scene *scene_load(file *f);
-ta_entity *scene_entity_init(scene *scn, ta_entity_type type, unsigned int uid);
+void *scene_obj_init(scene *scn, ta_object_type type, unsigned int uid);
 
 #if 0
 void entity_free(entity *e);
