@@ -58,12 +58,6 @@ typedef struct token {
     } value;
 } token;
 
-typedef struct {
-    token *tokens;
-    u32 index;
-    int level;
-} token_stream;
-
 typedef struct scene {
     const char *name;
     u32 next_uid;

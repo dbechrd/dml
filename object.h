@@ -67,28 +67,24 @@ typedef struct {
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef struct {
-    ta_object_type obj_type;
     u32 uid;
     const char *name;
     //ta_texture *texture;  // TODO: Use file id?
 } ta_material;
 
 typedef struct {
-    ta_object_type obj_type;
     u32 uid;
     const char *name;
     const char *path;
 } ta_mesh;
 
 typedef struct {
-    ta_object_type obj_type;
     u32 uid;
     const char *name;
     const char *path;
 } ta_shader;
 
 typedef struct {
-    ta_object_type obj_type;
     u32 uid;
     const char *name;
     const char *path;
@@ -99,8 +95,7 @@ typedef enum {
 } ta_entity_type;
 
 typedef struct ta_entity_s ta_entity;
-typedef struct ta_entity_s {
-    ta_object_type obj_type;
+struct ta_entity_s {
     u32 uid;
     ta_entity_type type;
     const char *name;
@@ -114,7 +109,7 @@ typedef struct ta_entity_s {
     ta_entity *parent;
     //ta_entity *next;  // TODO: Is a sibling linked list useful?
     ta_entity **children;
-} ta_entity;
+};
 
 //void material_init(ta_material *material);
 //void entity_init(ta_entity *entity);

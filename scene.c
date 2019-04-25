@@ -377,44 +377,18 @@ static void tokens_print_debug(token *tokens)
     printf("\n");
 }
 
-bool token_stream_peek(token_stream *stream, token **tok)
-{
-    if (stream->index < dlb_vec_len(stream->tokens)) {
-        *tok = &stream->tokens[stream->index];
-        return true;
-    }
-    return false;
-}
-
-bool token_stream_next(token_stream *stream, token **tok)
-{
-    if (stream->index < dlb_vec_len(stream->tokens)) {
-        *tok = &stream->tokens[stream->index];
-        stream->index++;
-        return true;
-    }
-    return false;
-}
-
-typedef struct {
-    ta_object_type type;
-    void *ptr;
-    int indent;
-} obj_ptr;
-
 void scene_parse(scene *scn, token *tokens)
 {
-    token_stream stream_ = { 0 };
-    token_stream *stream = &stream_;
-    stream->tokens = tokens;
+    struct {
+        ta_object_type type;
+        void *ptr;
+        int indent;
+    } stack[16] = { 0 };
 
-    // Objects in current level
-    obj_ptr stack[16] = { 0 };
     int level = 0;   // Current level of indentation
     int indent = 0;  // Current line indent counter
 
-    token *tok = 0;
-    while (token_stream_next(stream, &tok)) {
+    for (token *tok = tokens; tok != dlb_vec_end(tokens); tok++) {
         switch (tok->type) {
             case TOKEN_EOF: {
                 break;
@@ -446,7 +420,6 @@ void scene_parse(scene *scn, token *tokens)
                 break;
             } case TOKEN_NEWLINE: {
                 indent = 0;
-                tok = 0;
                 break;
             } case TOKEN_INDENT: {
                 indent++;
@@ -478,7 +451,6 @@ void scene_parse(scene *scn, token *tokens)
                 PANIC("Unexpected token %s\n", token_type_str(tok->type));
             }
         }
-        tok++;
     }
 }
 
@@ -503,30 +475,25 @@ void *scene_obj_init(scene *scn, ta_object_type type, unsigned int uid)
     switch (type) {
         case OBJ_TA_ENTITY: {
             ta_entity *ptr = dlb_vec_alloc(scn->entities);
-            ptr->obj_type = type;
             ptr->uid = scn->next_uid++;
             return ptr;
         } case OBJ_TA_MATERIAL: {
             ta_material *ptr = dlb_vec_alloc(scn->materials);
-            ptr->obj_type = type;
             ptr->uid = scn->next_uid++;
             return ptr;
             break;
         } case OBJ_TA_MESH: {
             ta_mesh *ptr = dlb_vec_alloc(scn->meshes);
-            ptr->obj_type = type;
             ptr->uid = scn->next_uid++;
             return ptr;
             break;
         } case OBJ_TA_SHADER: {
             ta_shader *ptr = dlb_vec_alloc(scn->shaders);
-            ptr->obj_type = type;
             ptr->uid = scn->next_uid++;
             return ptr;
             break;
         } case OBJ_TA_TEXTURE: {
             ta_texture *ptr = dlb_vec_alloc(scn->textures);
-            ptr->obj_type = type;
             ptr->uid = scn->next_uid++;
             return ptr;
             break;
