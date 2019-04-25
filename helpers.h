@@ -6,7 +6,7 @@
         "Source file: %s:%d\n\n", __FILE__, __LINE__); \
     fprintf(stderr, (format), __VA_ARGS__); \
     fprintf(stderr, "--------------------------------------------------------------------------------\n"); \
-    getchar(); \
+    UNUSED(getchar()); \
     exit(1);
 
 #define PANIC_FILE(f, format, ...) \
@@ -15,7 +15,7 @@
     file_debug_context(f); \
     fprintf(stderr, (format), __VA_ARGS__); \
     fprintf(stderr, "--------------------------------------------------------------------------------\n"); \
-    getchar(); \
+    UNUSED(getchar()); \
     exit(1);
 
 const char *char_printable(const char *c);

@@ -18,12 +18,10 @@
 #define C__ALPHA            C__ALPHA_LOWER C__ALPHA_UPPER
 #define C__ALPHA_NUM        C__ALPHA C__DIGIT
 #define C__ALPHA_SPECIAL    C__ALPHA_NUM "`~!@#$%^&*()-_=+[{]}\\|;:,<.>/?'"
-#define C__WHITESPACE       " "
-#define C__NEWLINE          "\n"
 
-#define C_WHITESPACE        C__WHITESPACE
+#define C_WHITESPACE        " "
 
-#define C_NEWLINE           C__NEWLINE
+#define C_NEWLINE          "\n"
 
 #define C_COMMENT_START     "#"
 #define C_COMMENT           C__ALPHA_SPECIAL " \t\""
@@ -42,11 +40,8 @@
 #define C_NUMBER_SIGN       C__SIGN
 #define C_NUMBER_INT        C__DIGIT
 #define C_NUMBER_FLOAT      C__DIGIT "."
-//#define C_NUMBER_END        C__NEWLINE
 
-#define C_STRING_START      "\""
 #define C_STRING            C__ALPHA_SPECIAL C_WHITESPACE
-#define C_STRING_END        "\""
 
 #define C_ARRAY_START       "["
 #define C_ARRAY_END         "]"

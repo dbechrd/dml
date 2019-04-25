@@ -21,9 +21,19 @@
 #include "dlb_arena.h"
 
 ta_entity *entity_create(scene *scn, const char *name) {
-    ta_entity *e = scene_obj_init(scn, OBJ_TA_ENTITY, 0);
+    ta_entity *e = scene_obj_init(scn, OBJ_TA_ENTITY);
     e->type = ENTITY_DEFAULT;
     e->name = name;
+    e->transform.position.x = 1.1f;
+    e->transform.position.y = 1.2f;
+    e->transform.position.z = 1.3f;
+    e->transform.rotation.x = 2.1f;
+    e->transform.rotation.y = 2.2f;
+    e->transform.rotation.z = 2.3f;
+    e->transform.rotation.w = 2.4f;
+    e->transform.scale.x = 3.1f;
+    e->transform.scale.y = 3.2f;
+    e->transform.scale.z = 3.3f;
     return e;
 }
 
@@ -33,11 +43,11 @@ void write_scene(const char *filename) {
     entity_create(scene, "Bobby");
 
     printf("[WRITE: %s]\n", filename);
-    scene_print(scene);
+    scene_print(scene, stdout);
     printf("\n");
 
     file *data_file = file_open(filename, FILE_WRITE);
-    scene_save(data_file, scene);
+    scene_print(scene, data_file->hnd);
     file_close(data_file);
     scene_free(scene);
 }
@@ -48,8 +58,7 @@ void read_scene(const char *filename) {
     file_close(data_file);
 
     printf("[READ %s]\n", filename);
-    scene_print(scene);
-    printf("\n");
+    scene_print(scene, stdout);
     scene_free(scene);
 }
 
@@ -66,7 +75,7 @@ DLB_ASSERT_HANDLER(assert_handler) {
         "--------------------------------------------------------------------------------\n",
         filename, line, expr
     );
-    getchar();
+    UNUSED(getchar());
     exit(1);
 }
 
@@ -80,10 +89,10 @@ int main(int argc, char *argv[]) {
     //write_scene(filename);
     //read_scene(filename);
 
-    const char *filname_cus = "data/custom.dml";
-    read_scene(filname_cus);
+    const char *filename = "data/custom.dml";
+    read_scene(filename);
 
     printf("fin.\n");
-	getchar();
+    UNUSED(getchar());
     return 0;
 }

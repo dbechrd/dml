@@ -7,23 +7,19 @@
 unsigned int parse_uint(char *buf)
 {
     unsigned long value = strtoul(buf, 0, 10);
-    DLB_ASSERT(value < ULONG_MAX);
     return (unsigned int)value;
 }
 
 int parse_int(char *buf)
 {
     long value = strtol(buf, 0, 10);
-    DLB_ASSERT(value > LONG_MIN);
-    DLB_ASSERT(value < LONG_MAX);
     return (int)value;
 }
 
 float parse_float_hex(char *buf)
 {
     float value;
-    unsigned l = strtoul(buf, 0, 16);
-    DLB_ASSERT(l < ULONG_MAX);
+    unsigned long l = strtoul(buf, 0, 16);
     value = *(float *)&l;
     return value;
 }

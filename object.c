@@ -92,10 +92,10 @@ void obj_register()
     obj->type = OBJ_TA_ENTITY;
     obj->name = INTERN(STRING(ta_entity));
     obj_field_add(obj, OBJ_STRING,       INTERN("name"),      OFFSETOF(ta_entity, name));
-    obj_field_add(obj, OBJ_INT,          INTERN("material"),  OFFSETOF(ta_entity, material));
-    obj_field_add(obj, OBJ_INT,          INTERN("mesh"),      OFFSETOF(ta_entity, mesh));
-    obj_field_add(obj, OBJ_INT,          INTERN("shader"),    OFFSETOF(ta_entity, shader));
-    obj_field_add(obj, OBJ_INT,          INTERN("texture"),   OFFSETOF(ta_entity, texture));
+    obj_field_add(obj, OBJ_STRING,       INTERN("material"),  OFFSETOF(ta_entity, material));
+    obj_field_add(obj, OBJ_STRING,       INTERN("mesh"),      OFFSETOF(ta_entity, mesh));
+    obj_field_add(obj, OBJ_STRING,       INTERN("shader"),    OFFSETOF(ta_entity, shader));
+    obj_field_add(obj, OBJ_STRING,       INTERN("texture"),   OFFSETOF(ta_entity, texture));
     obj_field_add(obj, OBJ_TA_TRANSFORM, INTERN("transform"), OFFSETOF(ta_entity, transform));
     dlb_hash_insert(&tg_objects_by_name, CSTR(STRING(ta_entity)), obj);
 
@@ -127,30 +127,53 @@ void obj_register()
     dlb_hash_insert(&tg_objects_by_name, CSTR(STRING(ta_texture)), obj);
 }
 
-void entity_free(ta_entity *entity)
+void ta_material_print(FILE *f, ta_material *o)
 {
-    // TODO: Free mesh, texture, etc. via reference counting
+    fprintf(f, "ta_material:\n");
+    fprintf(f, "  name: \"%s\"\n", IFNULL(o->name, ""));
 }
 
-void entity_print(FILE *f, ta_entity *e)
+void ta_mesh_print(FILE *f, ta_mesh *o)
 {
-    fprintf(f, "Entity: %d\n", e->uid);
+    fprintf(f, "ta_mesh:\n");
+    fprintf(f, "  name: \"%s\"\n", IFNULL(o->name, ""));
+    fprintf(f, "  path: \"%s\"\n", IFNULL(o->path, ""));
 }
 
-void entity_save(file *f, ta_entity *e)
+void ta_shader_print(FILE *f, ta_shader *o)
 {
-    entity_print(f->hnd, e);
+    fprintf(f, "ta_shader:\n");
+    fprintf(f, "  name: \"%s\"\n", IFNULL(o->name, ""));
+    fprintf(f, "  path: \"%s\"\n", IFNULL(o->path, ""));
 }
 
-#if 0
-void entity_load(file *f, scene *scn, ta_entity_type type, unsigned int uid)
+void ta_texture_print(FILE *f, ta_texture *o)
 {
-    ta_entity *e = scene_entity_init(scn, type, uid);
-
-    /*token_type token = 0;
-    do {
-    token = token_infer(f);
-    printf("%s\n", token_type_str(token));
-    } while(token != TOKEN_EOF);*/
+    fprintf(f, "ta_texture:\n");
+    fprintf(f, "  name: \"%s\"\n", IFNULL(o->name, ""));
+    fprintf(f, "  path: \"%s\"\n", IFNULL(o->path, ""));
 }
-#endif
+
+void ta_entity_print(FILE *f, ta_entity *o)
+{
+    fprintf(f, "ta_entity:\n");
+    fprintf(f, "  name:     \"%s\"\n", IFNULL(o->name,     ""));
+    fprintf(f, "  material: \"%s\"\n", IFNULL(o->material, ""));
+    fprintf(f, "  mesh:     \"%s\"\n", IFNULL(o->mesh,     ""));
+    fprintf(f, "  shader:   \"%s\"\n", IFNULL(o->shader,   ""));
+    fprintf(f, "  texture:  \"%s\"\n", IFNULL(o->texture,  ""));
+    fprintf(f, "  transform:\n");
+    fprintf(f, "    position:\n");
+    fprintf(f, "      x: %f\n", o->transform.position.x);
+    fprintf(f, "      y: %f\n", o->transform.position.y);
+    fprintf(f, "      z: %f\n", o->transform.position.z);
+    fprintf(f, "    rotation:\n");
+    fprintf(f, "      x: %f\n", o->transform.rotation.x);
+    fprintf(f, "      y: %f\n", o->transform.rotation.y);
+    fprintf(f, "      z: %f\n", o->transform.rotation.z);
+    fprintf(f, "      w: %f\n", o->transform.rotation.w);
+    fprintf(f, "    scale:\n");
+    fprintf(f, "      x: %f\n", o->transform.scale.x);
+    fprintf(f, "      y: %f\n", o->transform.scale.y);
+    fprintf(f, "      z: %f\n", o->transform.scale.z);
+}

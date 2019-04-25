@@ -1,5 +1,6 @@
 ta_entity:
   name: "entity_name"
+  material: null
   transform:
     position:
       x: 1.0

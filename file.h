@@ -24,7 +24,7 @@ typedef struct file {
 
     // Debug info
     file_pos pos;
-    char context_buf[1024];  // Circular buffer
+    char context_buf[80];  // Line buffer for debug context
     int context_len;
 } file;
 

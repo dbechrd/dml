@@ -60,7 +60,6 @@ typedef struct token {
 
 typedef struct scene {
     const char *name;
-    u32 next_uid;
     ta_entity *entities;
     ta_material *materials;
     ta_mesh *meshes;
@@ -69,8 +68,7 @@ typedef struct scene {
 } scene;
 
 scene *scene_init(const char *name);
-void scene_free(scene *scn);
-void scene_print(scene *scn);
-void scene_save(file *f, scene *scn);
 scene *scene_load(file *f);
-void *scene_obj_init(scene *scn, ta_object_type type, unsigned int uid);
+void scene_free(scene *scn);
+void scene_print(scene *scn, FILE *hnd);
+void *scene_obj_init(scene *scn, ta_object_type type);

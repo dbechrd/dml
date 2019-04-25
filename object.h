@@ -8,6 +8,7 @@ typedef enum {
 
     // Atomic types
     OBJ_INT,
+    OBJ_UINT,
     OBJ_FLOAT,
     OBJ_STRING,
     OBJ_ATOMIC_LAST = OBJ_STRING,
@@ -67,25 +68,21 @@ typedef struct {
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef struct {
-    u32 uid;
     const char *name;
     //ta_texture *texture;  // TODO: Use file id?
 } ta_material;
 
 typedef struct {
-    u32 uid;
     const char *name;
     const char *path;
 } ta_mesh;
 
 typedef struct {
-    u32 uid;
     const char *name;
     const char *path;
 } ta_shader;
 
 typedef struct {
-    u32 uid;
     const char *name;
     const char *path;
 } ta_texture;
@@ -96,14 +93,13 @@ typedef enum {
 
 typedef struct ta_entity_s ta_entity;
 struct ta_entity_s {
-    u32 uid;
     ta_entity_type type;
     const char *name;
 
-    u32 material;
-    u32 mesh;
-    u32 shader;
-    u32 texture;
+    const char *material;
+    const char *mesh;
+    const char *shader;
+    const char *texture;
     ta_transform transform;
 
     ta_entity *parent;
@@ -111,8 +107,8 @@ struct ta_entity_s {
     ta_entity **children;
 };
 
-//void material_init(ta_material *material);
-//void entity_init(ta_entity *entity);
-void entity_free(ta_entity *entity);
-void entity_print(FILE *f, ta_entity *e);
-void entity_save(file *f, ta_entity *e);
+void ta_material_print(FILE *f, ta_material *o);
+void ta_mesh_print(FILE *f, ta_mesh *o);
+void ta_shader_print(FILE *f, ta_shader *o);
+void ta_texture_print(FILE *f, ta_texture *o);
+void ta_entity_print(FILE *f, ta_entity *o);

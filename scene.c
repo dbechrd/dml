@@ -7,38 +7,47 @@
 #include "dlb_vector.h"
 #include "dlb_hash.h"
 
-scene *scene_init(const char *name) {
+scene *scene_init(const char *name)
+{
     scene *scn = dlb_calloc(1, sizeof(*scn));
     scn->name = name;
-    scn->next_uid = 1;
     dlb_vec_reserve(scn->entities, 2);
     return scn;
 }
 
-void scene_free(scene *scn) {
-    for (ta_entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
-        entity_free(e);
-    }
+void scene_free(scene *scn)
+{
+    // TODO: Call free on each object individually
+    //for (ta_entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
+    //    entity_free(e);
+    //}
     dlb_vec_free(scn->entities);
+    dlb_vec_free(scn->materials);
+    dlb_vec_free(scn->meshes);
+    dlb_vec_free(scn->shaders);
+    dlb_vec_free(scn->textures);
     free(scn);
 }
 
-void scene_print(scene *scn) {
-    // Print loaded entities
+void scene_print(scene *scn, FILE *hnd)
+{
     printf("Scene name: %s\n", scn->name);
-    printf("Entities:\n");
-    for (ta_entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
-        entity_print(stdout, e);
+    for (ta_entity *o = scn->entities; o != dlb_vec_end(scn->entities); o++) {
+        ta_entity_print(hnd, o);
     }
-    // TODO: Print materials, textures, etc.
-    fflush(stdout);
-}
-
-void scene_save(file *f, scene *scn) {
-    fprintf(f->hnd, "%s\n", scn->name);
-    for (ta_entity *e = scn->entities; e != dlb_vec_end(scn->entities); e++) {
-        entity_save(f, e);
+    for (ta_material *o = scn->materials; o != dlb_vec_end(scn->materials); o++) {
+        ta_material_print(hnd, o);
     }
+    for (ta_mesh *o = scn->meshes; o != dlb_vec_end(scn->meshes); o++) {
+        ta_mesh_print(hnd, o);
+    }
+    for (ta_shader *o = scn->shaders; o != dlb_vec_end(scn->shaders); o++) {
+        ta_shader_print(hnd, o);
+    }
+    for (ta_texture *o = scn->textures; o != dlb_vec_end(scn->textures); o++) {
+        ta_texture_print(hnd, o);
+    }
+    fflush(hnd);
 }
 
 static token *token_read(file *f, token **tokens)
@@ -172,20 +181,20 @@ static token *token_read(file *f, token **tokens)
         case '"':
         {
             token->type = TOKEN_STRING;
-            file_expect_char(f, C_STRING_START, 1);
+            file_expect_char(f, "\"", 1);
             char buf[MAX_STRING_LEN + 1] = { 0 };
             int len = 0;
             char delim = 0;
             int read = 0;
             do {
                 delim = file_read(f, buf + len, MAX_STRING_LEN - len, C_STRING,
-                    "\\" C_STRING_END, &read);
+                    "\\\"", &read);
                 len += read;
                 if (delim == '\\') {
                     buf[len++] = file_char_escaped(f);
                 }
             } while (delim == '\\');
-            file_expect_char(f, C_STRING_END, 1);
+            file_expect_char(f, "\"", 1);
             token->length = len;
             token->value.string = intern(buf, len);
             break;
@@ -381,6 +390,7 @@ void scene_parse(scene *scn, token *tokens)
 {
     struct {
         ta_object_type type;
+        const char *name;
         void *ptr;
         int indent;
     } stack[16] = { 0 };
@@ -391,6 +401,16 @@ void scene_parse(scene *scn, token *tokens)
     for (token *tok = tokens; tok != dlb_vec_end(tokens); tok++) {
         switch (tok->type) {
             case TOKEN_EOF: {
+                break;
+            } case TOKEN_WHITESPACE: {
+                break;
+            } case TOKEN_NEWLINE: {
+                indent = 0;
+                break;
+            } case TOKEN_INDENT: {
+                indent++;
+                break;
+            } case TOKEN_COMMENT: {
                 break;
             } case TOKEN_IDENTIFIER: {
                 for (int i = level; i >= 0; i--) {
@@ -403,32 +423,36 @@ void scene_parse(scene *scn, token *tokens)
 
                 if (level) {
                     ta_object_field *field = obj_field_find(stack[level-1].type, tok->value.string);
-                    DLB_ASSERT(field);
+                    if (!field) {
+                        PANIC("Unexpected field '%s' on object '%s'\n", tok->value.string, stack[level-1].name);
+                    }
                     DLB_ASSERT(field->type);
                     stack[level].type = field->type;
+                    stack[level].name = field->name;
                     stack[level].ptr = ((u8 *)stack[level-1].ptr + field->offset);
                 } else {
                     ta_object *obj = dlb_hash_search(&tg_objects_by_name, tok->value.string, tok->length);
-                    DLB_ASSERT(obj);
+                    if (!obj) {
+                        PANIC("Unexpected type name '%s'\n", tok->value.string);
+                    }
                     DLB_ASSERT(obj->type);
                     stack[level].type = obj->type;
-                    stack[level].ptr = scene_obj_init(scn, obj->type, 0);
+                    stack[level].name = obj->name;
+                    stack[level].ptr = scene_obj_init(scn, obj->type);
                 }
                 level++;
                 break;
-            } case TOKEN_WHITESPACE: {
-                break;
-            } case TOKEN_NEWLINE: {
-                indent = 0;
-                break;
-            } case TOKEN_INDENT: {
-                indent++;
-                break;
-            } case TOKEN_COMMENT: {
+            } case TOKEN_KW_NULL: {
+                DLB_ASSERT(level);
+                DLB_ASSERT(stack[level-1].type == OBJ_STRING);
+                level--;
                 break;
             } case TOKEN_INT: {
                 DLB_ASSERT(level);
-                DLB_ASSERT(stack[level-1].type == OBJ_INT);
+                DLB_ASSERT(
+                    stack[level-1].type == OBJ_INT ||
+                    stack[level-1].type == OBJ_UINT
+                );
                 int *fp = stack[level-1].ptr;
                 *fp = tok->value.as_int;
                 level--;
@@ -465,42 +489,28 @@ scene *scene_load(file *f)
     return scn;
 }
 
-void *scene_obj_init(scene *scn, ta_object_type type, unsigned int uid)
+void *scene_obj_init(scene *scn, ta_object_type type)
 {
-    if (uid) {
-        DLB_ASSERT(uid >= scn->next_uid);
-        scn->next_uid = uid;
-    }
-
+    void *obj = 0;
     switch (type) {
         case OBJ_TA_ENTITY: {
-            ta_entity *ptr = dlb_vec_alloc(scn->entities);
-            ptr->uid = scn->next_uid++;
-            return ptr;
+            obj = dlb_vec_alloc(scn->entities);
+            break;
         } case OBJ_TA_MATERIAL: {
-            ta_material *ptr = dlb_vec_alloc(scn->materials);
-            ptr->uid = scn->next_uid++;
-            return ptr;
+            obj = dlb_vec_alloc(scn->materials);
             break;
         } case OBJ_TA_MESH: {
-            ta_mesh *ptr = dlb_vec_alloc(scn->meshes);
-            ptr->uid = scn->next_uid++;
-            return ptr;
+            obj = dlb_vec_alloc(scn->meshes);
             break;
         } case OBJ_TA_SHADER: {
-            ta_shader *ptr = dlb_vec_alloc(scn->shaders);
-            ptr->uid = scn->next_uid++;
-            return ptr;
+            obj = dlb_vec_alloc(scn->shaders);
             break;
         } case OBJ_TA_TEXTURE: {
-            ta_texture *ptr = dlb_vec_alloc(scn->textures);
-            ptr->uid = scn->next_uid++;
-            return ptr;
+            obj = dlb_vec_alloc(scn->textures);
             break;
         } default: {
             DLB_ASSERT(!"Cannot initialize this type as a standalone object");
         }
     }
-
-    return NULL;
+    return obj;
 }
