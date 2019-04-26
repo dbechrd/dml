@@ -26,27 +26,27 @@ typedef enum {
     OBJ_TA_TEXTURE,
 
     OBJ_COUNT
-} ta_object_type;
+} ta_field_type;
 
 typedef struct {
-    ta_object_type type;
+    ta_field_type type;
     const char *name;
     int offset;
-} ta_object_field;
+} ta_schema_field;
 
 typedef struct {
-    ta_object_type type;
+    ta_field_type type;
     const char *name;
-    ta_object_field *fields;
-} ta_object;
+    ta_schema_field *fields;
+} ta_schema;
 
-extern ta_object tg_objects[OBJ_COUNT];
-extern dlb_hash tg_objects_by_name;
+extern ta_schema tg_schemas[OBJ_COUNT];
+extern dlb_hash tg_schemas_by_name;
 
-const char *ta_object_type_str(ta_object_type type);
-void obj_field_add(ta_object *obj, ta_object_type type, const char *name,
+const char *ta_object_type_str(ta_field_type type);
+void obj_field_add(ta_schema *obj, ta_field_type type, const char *name,
     u32 offset);
-ta_object_field *obj_field_find(ta_object_type type, const char *name);
+ta_schema_field *obj_field_find(ta_field_type type, const char *name);
 void obj_register();
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -107,6 +107,7 @@ struct ta_entity_s {
     ta_entity **children;
 };
 
+void obj_print(FILE *f, ta_field_type type, u8 *ptr, int level);
 void ta_material_print(FILE *f, ta_material *o);
 void ta_mesh_print(FILE *f, ta_mesh *o);
 void ta_shader_print(FILE *f, ta_shader *o);

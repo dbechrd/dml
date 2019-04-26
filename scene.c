@@ -31,21 +31,22 @@ void scene_free(scene *scn)
 
 void scene_print(scene *scn, FILE *hnd)
 {
+    // TODO: Register scene as a schema that has OBJ_ARRAY of entities
     printf("Scene name: %s\n", scn->name);
     for (ta_entity *o = scn->entities; o != dlb_vec_end(scn->entities); o++) {
-        ta_entity_print(hnd, o);
+        obj_print(hnd, OBJ_TA_ENTITY, (void *)o, 0);
     }
     for (ta_material *o = scn->materials; o != dlb_vec_end(scn->materials); o++) {
-        ta_material_print(hnd, o);
+        obj_print(hnd, OBJ_TA_MATERIAL, (void *)o, 0);
     }
     for (ta_mesh *o = scn->meshes; o != dlb_vec_end(scn->meshes); o++) {
-        ta_mesh_print(hnd, o);
+        obj_print(hnd, OBJ_TA_MESH, (void *)o, 0);
     }
     for (ta_shader *o = scn->shaders; o != dlb_vec_end(scn->shaders); o++) {
-        ta_shader_print(hnd, o);
+        obj_print(hnd, OBJ_TA_SHADER, (void *)o, 0);
     }
     for (ta_texture *o = scn->textures; o != dlb_vec_end(scn->textures); o++) {
-        ta_texture_print(hnd, o);
+        obj_print(hnd, OBJ_TA_TEXTURE, (void *)o, 0);
     }
     fflush(hnd);
 }
@@ -119,6 +120,8 @@ static token *token_read(file *f, token **tokens)
                 token->type = TOKEN_KW_TRUE;
             } else if (token->value.string == sym_kw_false) {
                 token->type = TOKEN_KW_FALSE;
+            } else {
+                PANIC_FILE(f, "Expected : after identifier '%s'\n", token->value.string);
             }
             break;
         }
@@ -196,7 +199,7 @@ static token *token_read(file *f, token **tokens)
             } while (delim == '\\');
             file_expect_char(f, "\"", 1);
             token->length = len;
-            token->value.string = intern(buf, len);
+            token->value.string = len ? intern(buf, len) : 0;
             break;
         }
         case '[':
@@ -389,7 +392,7 @@ static void tokens_print_debug(token *tokens)
 void scene_parse(scene *scn, token *tokens)
 {
     struct {
-        ta_object_type type;
+        ta_field_type type;
         const char *name;
         void *ptr;
         int indent;
@@ -422,7 +425,7 @@ void scene_parse(scene *scn, token *tokens)
                 stack[level].indent = indent;
 
                 if (level) {
-                    ta_object_field *field = obj_field_find(stack[level-1].type, tok->value.string);
+                    ta_schema_field *field = obj_field_find(stack[level-1].type, tok->value.string);
                     if (!field) {
                         PANIC("Unexpected field '%s' on object '%s'\n", tok->value.string, stack[level-1].name);
                     }
@@ -431,7 +434,7 @@ void scene_parse(scene *scn, token *tokens)
                     stack[level].name = field->name;
                     stack[level].ptr = ((u8 *)stack[level-1].ptr + field->offset);
                 } else {
-                    ta_object *obj = dlb_hash_search(&tg_objects_by_name, tok->value.string, tok->length);
+                    ta_schema *obj = dlb_hash_search(&tg_schemas_by_name, tok->value.string, tok->length);
                     if (!obj) {
                         PANIC("Unexpected type name '%s'\n", tok->value.string);
                     }
@@ -489,7 +492,7 @@ scene *scene_load(file *f)
     return scn;
 }
 
-void *scene_obj_init(scene *scn, ta_object_type type)
+void *scene_obj_init(scene *scn, ta_field_type type)
 {
     void *obj = 0;
     switch (type) {

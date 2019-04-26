@@ -71,4 +71,4 @@ scene *scene_init(const char *name);
 scene *scene_load(file *f);
 void scene_free(scene *scn);
 void scene_print(scene *scn, FILE *hnd);
-void *scene_obj_init(scene *scn, ta_object_type type);
+void *scene_obj_init(scene *scn, ta_field_type type);
