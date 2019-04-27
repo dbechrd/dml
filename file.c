@@ -38,7 +38,7 @@ void file_close(file *f) {
 
 void file_debug_context(file *f)
 {
-    fprintf(stderr, " Scene file: %s:%d:%d\n\n", f->filename, f->pos.line, f->pos.column);
+    fprintf(stderr, "File: %s:%d:%d\n\n", f->filename, f->pos.line, f->pos.column);
     fprintf(stderr, "%04d:%.*s", f->pos.line, f->context_len, f->context_buf);
     size_t col = f->pos.column;
 
@@ -211,6 +211,7 @@ int file_allow_char(file *f, const char *chars, int times) {
     return count;
 }
 
+#if 0
 static void file_expect_string(file *f, const char *str) {
     const char *s = str;
     while (*s) {
@@ -226,15 +227,16 @@ static void file_expect_string(file *f, const char *str) {
     }
 }
 
-//char *file_read_all(file *f) {
-//    DLB_ASSERT(!fseek(f->hnd, 0, SEEK_END));
-//    long pos = ftell(f->hnd);
-//    DLB_ASSERT(pos <= SIZE_MAX);
-//    DLB_ASSERT(!fseek(f->hnd, 0, SEEK_SET));
-//
-//    size_t end = (size_t)pos;
-//    char *buf = dlb_malloc(end + 1);
-//    fread(buf, end, 1, f->hnd);
-//    buf[end] = 0;
-//    return buf;
-//}
+char *file_read_all(file *f) {
+    DLB_ASSERT(!fseek(f->hnd, 0, SEEK_END));
+    long pos = ftell(f->hnd);
+    DLB_ASSERT(pos <= SIZE_MAX);
+    DLB_ASSERT(!fseek(f->hnd, 0, SEEK_SET));
+
+    size_t end = (size_t)pos;
+    char *buf = dlb_malloc(end + 1);
+    fread(buf, end, 1, f->hnd);
+    buf[end] = 0;
+    return buf;
+}
+#endif

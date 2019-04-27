@@ -7,36 +7,10 @@
 #define CSTR(s) (s), sizeof(s) - 1
 #define INTERN(s) intern(CSTR(s))
 
-#if 0
-extern const char *sym_entity;
-extern const char *sym_name;
-extern const char *sym_material;
-extern const char *sym_mesh;
-extern const char *sym_shader;
-extern const char *sym_texture;
-extern const char *sym_transform;
-extern const char *sym_position;
-extern const char *sym_rotation;
-extern const char *sym_scale;
-extern const char *sym_x;
-extern const char *sym_y;
-extern const char *sym_z;
-extern const char *sym_w;
-extern const char *sym_path;
-#endif
-
+extern const char *sym_ident_name;
 extern const char *sym_kw_null;
 extern const char *sym_kw_true;
 extern const char *sym_kw_false;
-
-#if 0
-extern const char *sym_int;
-extern const char *sym_float;
-extern const char *sym_char;
-extern const char *sym_string;
-extern const char *sym_vec3;
-extern const char *sym_vec4;
-#endif
 
 const char *intern(const char *s, u32 len);
 void init_symbols();

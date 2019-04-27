@@ -2,6 +2,7 @@
 #include "file.h"
 #include "object.h"
 #include "dlb_types.h"
+#include "dlb_hash.h"
 
 typedef enum token_type {
     TOKEN_UNKNOWN,
@@ -58,17 +59,26 @@ typedef struct token {
     } value;
 } token;
 
-typedef struct scene {
+typedef struct ta_scene_s ta_scene;
+
+typedef struct scene_ref_s {
+    ta_field_type type;
+    void *ptr;
+} scene_ref;
+
+typedef struct ta_scene_s {
     const char *name;
+    dlb_hash refs_by_name;
+    scene_ref *refs;
     ta_entity *entities;
     ta_material *materials;
     ta_mesh *meshes;
     ta_shader *shaders;
     ta_texture *textures;
-} scene;
+} ta_scene;
 
-scene *scene_init(const char *name);
-scene *scene_load(file *f);
-void scene_free(scene *scn);
-void scene_print(scene *scn, FILE *hnd);
-void *scene_obj_init(scene *scn, ta_field_type type);
+ta_scene *scene_init(const char *name);
+ta_scene *scene_load(file *f);
+void scene_free(ta_scene *scn);
+void scene_print(ta_scene *scn, FILE *hnd);
+void *scene_obj_init(ta_scene *scn, ta_field_type type);

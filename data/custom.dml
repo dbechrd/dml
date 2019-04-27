@@ -1,8 +1,9 @@
 ta_entity:
   name: "entity_name"
+  material: "material_name"
   transform:
     position:
-      x: 1.0
+      x: 0x40800000 (1.0)
       y: 2.0
       z: 3.0
     rotation:

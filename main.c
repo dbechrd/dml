@@ -20,8 +20,8 @@
 #define DLB_ARENA_IMPLEMENTATION
 #include "dlb_arena.h"
 
-ta_entity *entity_create(scene *scn, const char *name) {
-    ta_entity *e = scene_obj_init(scn, OBJ_TA_ENTITY);
+ta_entity *entity_create(ta_scene *scn, const char *name) {
+    ta_entity *e = scene_obj_init(scn, F_OBJ_ENTITY);
     e->type = ENTITY_DEFAULT;
     e->name = name;
     e->transform.position.x = 1.1f;
@@ -38,7 +38,7 @@ ta_entity *entity_create(scene *scn, const char *name) {
 }
 
 void write_scene(const char *filename) {
-    scene *scene = scene_init("test scene");
+    ta_scene *scene = scene_init("test scene");
     entity_create(scene, "Timmy");
     entity_create(scene, "Bobby");
 
@@ -54,7 +54,7 @@ void write_scene(const char *filename) {
 
 void read_scene(const char *filename) {
     file *data_file = file_open(filename, FILE_READ);
-    scene *scene = scene_load(data_file);
+    ta_scene *scene = scene_load(data_file);
     file_close(data_file);
 
     printf("[READ %s]\n", filename);

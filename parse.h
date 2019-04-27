@@ -30,6 +30,7 @@
 #define C_IDENT_START       C__ALPHA
 #define C_IDENT             C__ALPHA_LOWER C__DIGIT "_"
 #define C_IDENT_END         ":"
+#define IDENT_NAME          "name"
 #define KEYWORD_NULL        "null"
 #define KEYWORD_TRUE        "true"
 #define KEYWORD_FALSE       "false"
