@@ -58,7 +58,9 @@ void read_scene(const char *filename) {
     file_close(data_file);
 
     printf("[READ %s]\n", filename);
+    fprintf(stdout, "---------------------------------\n");
     scene_print(scene, stdout);
+    fprintf(stdout, "---------------------------------\n");
     scene_free(scene);
 }
 
@@ -92,7 +94,7 @@ int main(int argc, char *argv[]) {
     const char *filename = "data/custom.dml";
     read_scene(filename);
 
-    printf("fin.\n");
+    printf("\nfin.\n");
     UNUSED(getchar());
     return 0;
 }

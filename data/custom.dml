@@ -1,9 +1,9 @@
 ta_entity:
-  name: "entity_name"
-  material: "material_name"
+  name: "entity_1"
+  material: "material_1"
   transform:
     position:
-      x: 0x40800000 (1.0)
+      x: 1.0
       y: 2.0
       z: 3.0
     rotation:
@@ -16,16 +16,36 @@ ta_entity:
       y: 2.0
       z: 3.0
 ta_material:
-  name: "material_name"
+  name: "material_1"
 ta_mesh:
-  name: "mesh_name"
-  path: "mesh_path"
+  name: "mesh_1"
+  path: "mesh_1_path"
 ta_shader:
-  name: "shader_name"
-  path: "shader_path"
+  name: "shader_1"
+  path: "shader_1_path"
 ta_texture:
-  name: "texture_name"
-  path: "texture_path"
+  name: "texture_1"
+  path: "texture_1_path"
+ta_sun_light:
+  name: "sun"
+  direction:
+    x: 1.0
+    y: 2.0
+    z: 3.0
+  color:
+    r: 1.0
+    g: 2.0
+    b: 3.0
+ta_point_light:
+  name: "point_light_1"
+  position:
+    x: 1.0
+    y: 2.0
+    z: 3.0
+  color:
+    r: 1.0
+    g: 2.0
+    b: 3.0
 #ta_texture:
 #  name: "texture_example"
 #  test: "First\\\"hi\"\\Second"

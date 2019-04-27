@@ -70,11 +70,13 @@ typedef struct ta_scene_s {
     const char *name;
     dlb_hash refs_by_name;
     scene_ref *refs;
-    ta_entity *entities;
+    ta_sun_light *sun_lights;
+    ta_point_light  *point_lights;
     ta_material *materials;
     ta_mesh *meshes;
     ta_shader *shaders;
     ta_texture *textures;
+    ta_entity *entities;
 } ta_scene;
 
 ta_scene *scene_init(const char *name);

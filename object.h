@@ -11,25 +11,29 @@ typedef enum {
     F_ATOM_UINT,
     F_ATOM_FLOAT,
     F_ATOM_STRING,
+    F_ATOM_END = F_ATOM_STRING,
 
-    // Data objects
-    F_OBJ           = 0x20,
-    F_OBJ_VEC3      = F_OBJ,
+    // Object types
+    F_OBJ_VEC3,
+    F_OBJ_COLOR3,
     F_OBJ_VEC4,
+    F_OBJ_COLOR4,
     F_OBJ_TRANSFORM,
-    F_OBJ_ENTITY,
+    F_OBJ_SUN_LIGHT,
+    F_OBJ_POINT_LIGHT,
     F_OBJ_MATERIAL,
     F_OBJ_MESH,
     F_OBJ_SHADER,
     F_OBJ_TEXTURE,
-    F_OBJ_END,
-    F_OBJ_COUNT     = (F_OBJ_END - 1) - F_OBJ,
+    F_OBJ_ENTITY,
+    F_COUNT,
 } ta_field_type;
 
 typedef struct {
     ta_field_type type;
     const char *name;
     int offset;
+    bool alias;
 } ta_schema_field;
 
 typedef struct {
@@ -43,7 +47,7 @@ extern dlb_hash tg_schemas_by_name;
 
 const char *ta_object_type_str(ta_field_type type);
 void obj_field_add(ta_schema *obj, ta_field_type type, const char *name,
-    u32 offset);
+    u32 offset, bool alias);
 ta_schema_field *obj_field_find(ta_field_type type, const char *name);
 void obj_register();
 
@@ -66,9 +70,19 @@ typedef struct {
 ////////////////////////////////////////////////////////////////////////////////
 typedef struct ta_scene_s ta_scene;
 
-typedef struct ta_light_s {
+typedef struct ta_sun_light_s {
     ta_scene *scene;
-} ta_light;
+    const char *name;
+    ta_vec3 direction;
+    ta_vec3 color;
+} ta_sun_light;
+
+typedef struct ta_point_light_s {
+    ta_scene *scene;
+    const char *name;
+    ta_vec3 position;
+    ta_vec3 color;
+} ta_point_light;
 
 typedef struct ta_material_s {
     ta_scene *scene;
@@ -101,15 +115,13 @@ typedef enum {
 typedef struct ta_entity_s ta_entity;
 typedef struct ta_entity_s {
     ta_scene *scene;
-    ta_entity_type type;
     const char *name;
-
+    ta_entity_type type;
     const char *material;
     const char *mesh;
     const char *shader;
     const char *texture;
     ta_transform transform;
-
     ta_entity *parent;
     //ta_entity *next;  // TODO: Is a sibling linked list useful?
     ta_entity **children;

@@ -5,7 +5,7 @@
 #include "dlb_types.h"
 #include "dlb_vector.h"
 
-ta_schema tg_schemas[F_OBJ_COUNT];
+ta_schema tg_schemas[F_COUNT];
 dlb_hash tg_schemas_by_name;
 
 const char *ta_object_type_str(ta_field_type type) {
@@ -19,12 +19,13 @@ const char *ta_object_type_str(ta_field_type type) {
 };
 
 void obj_field_add(ta_schema *obj, ta_field_type type, const char *name,
-    u32 offset)
+    u32 offset, bool alias)
 {
-    ta_schema_field *fo = dlb_vec_alloc(obj->fields);
-    fo->type = type;
-    fo->name = name;
-    fo->offset = offset;
+    ta_schema_field *field = dlb_vec_alloc(obj->fields);
+    field->type = type;
+    field->name = name;
+    field->offset = offset;
+    field->alias = alias;
 }
 
 ta_schema_field *obj_field_find(ta_field_type type, const char *name)
@@ -66,69 +67,100 @@ void obj_register()
     obj = &tg_schemas[F_OBJ_VEC3];
     obj->type = F_OBJ_VEC3;
     obj->name = INTERN(STRING(ta_vec3));
-    obj_field_add(obj, F_ATOM_FLOAT, INTERN("x"), OFFSETOF(ta_vec3, x));
-    obj_field_add(obj, F_ATOM_FLOAT, INTERN("y"), OFFSETOF(ta_vec3, y));
-    obj_field_add(obj, F_ATOM_FLOAT, INTERN("z"), OFFSETOF(ta_vec3, z));
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("x"), OFFSETOF(ta_vec3, x), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("y"), OFFSETOF(ta_vec3, y), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("z"), OFFSETOF(ta_vec3, z), 0);
     dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_vec3)), obj);
+
+    obj = &tg_schemas[F_OBJ_COLOR3];
+    obj->type = F_OBJ_COLOR3;
+    obj->name = INTERN("ta_color3");
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("r"), OFFSETOF(ta_vec3, x), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("g"), OFFSETOF(ta_vec3, y), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("b"), OFFSETOF(ta_vec3, z), 0);
+    dlb_hash_insert(&tg_schemas_by_name, CSTR("ta_color3"), obj);
 
     obj = &tg_schemas[F_OBJ_VEC4];
     obj->type = F_OBJ_VEC4;
     obj->name = INTERN(STRING(ta_vec4));
-    obj_field_add(obj, F_ATOM_FLOAT, INTERN("x"), OFFSETOF(ta_vec4, x));
-    obj_field_add(obj, F_ATOM_FLOAT, INTERN("y"), OFFSETOF(ta_vec4, y));
-    obj_field_add(obj, F_ATOM_FLOAT, INTERN("z"), OFFSETOF(ta_vec4, z));
-    obj_field_add(obj, F_ATOM_FLOAT, INTERN("w"), OFFSETOF(ta_vec4, w));
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("x"), OFFSETOF(ta_vec4, x), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("y"), OFFSETOF(ta_vec4, y), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("z"), OFFSETOF(ta_vec4, z), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("w"), OFFSETOF(ta_vec4, w), 0);
+    dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_vec4)), obj);
+
+    obj = &tg_schemas[F_OBJ_COLOR4];
+    obj->type = F_OBJ_COLOR4;
+    obj->name = INTERN("ta_color4");
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("r"), OFFSETOF(ta_vec4, x), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("g"), OFFSETOF(ta_vec4, y), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("b"), OFFSETOF(ta_vec4, z), 0);
+    obj_field_add(obj, F_ATOM_FLOAT, INTERN("a"), OFFSETOF(ta_vec4, w), 0);
     dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_vec4)), obj);
 
     obj = &tg_schemas[F_OBJ_TRANSFORM];
     obj->type = F_OBJ_TRANSFORM;
     obj->name = INTERN(STRING(ta_transform));
-    obj_field_add(obj, F_OBJ_VEC3, INTERN("position"), OFFSETOF(ta_transform, position));
-    obj_field_add(obj, F_OBJ_VEC4, INTERN("rotation"), OFFSETOF(ta_transform, rotation));
-    obj_field_add(obj, F_OBJ_VEC3, INTERN("scale"),    OFFSETOF(ta_transform, scale));
+    obj_field_add(obj, F_OBJ_VEC3, INTERN("position"), OFFSETOF(ta_transform, position), 0);
+    obj_field_add(obj, F_OBJ_VEC4, INTERN("rotation"), OFFSETOF(ta_transform, rotation), 0);
+    obj_field_add(obj, F_OBJ_VEC3, INTERN("scale"),    OFFSETOF(ta_transform, scale), 0);
     dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_transform)), obj);
 
     // Scene-level object types
-    obj = &tg_schemas[F_OBJ_ENTITY];
-    obj->type = F_OBJ_ENTITY;
-    obj->name = INTERN(STRING(ta_entity));
-    obj_field_add(obj, F_ATOM_STRING,       INTERN("name"),      OFFSETOF(ta_entity, name));
-    obj_field_add(obj, F_ATOM_STRING,       INTERN("material"),  OFFSETOF(ta_entity, material));
-    obj_field_add(obj, F_ATOM_STRING,       INTERN("mesh"),      OFFSETOF(ta_entity, mesh));
-    obj_field_add(obj, F_ATOM_STRING,       INTERN("shader"),    OFFSETOF(ta_entity, shader));
-    obj_field_add(obj, F_ATOM_STRING,       INTERN("texture"),   OFFSETOF(ta_entity, texture));
-    obj_field_add(obj, F_OBJ_TRANSFORM,     INTERN("transform"), OFFSETOF(ta_entity, transform));
-    dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_entity)), obj);
+    obj = &tg_schemas[F_OBJ_SUN_LIGHT];
+    obj->type = F_OBJ_SUN_LIGHT;
+    obj->name = INTERN(STRING(ta_sun_light));
+    obj_field_add(obj, F_ATOM_STRING, INTERN("name"),      OFFSETOF(ta_sun_light, name), 0);
+    obj_field_add(obj, F_OBJ_VEC3,    INTERN("direction"), OFFSETOF(ta_sun_light, direction), 0);
+    obj_field_add(obj, F_OBJ_COLOR3,  INTERN("color"),     OFFSETOF(ta_sun_light, color), 0);
+    dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_sun_light)), obj);
+
+    obj = &tg_schemas[F_OBJ_POINT_LIGHT];
+    obj->type = F_OBJ_POINT_LIGHT;
+    obj->name = INTERN(STRING(ta_point_light));
+    obj_field_add(obj, F_ATOM_STRING, INTERN("name"),     OFFSETOF(ta_point_light, name), 0);
+    obj_field_add(obj, F_OBJ_VEC3,    INTERN("position"), OFFSETOF(ta_point_light, position), 0);
+    obj_field_add(obj, F_OBJ_COLOR3,  INTERN("color"),    OFFSETOF(ta_point_light, color), 0);
+    dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_point_light)), obj);
 
     obj = &tg_schemas[F_OBJ_MATERIAL];
     obj->type = F_OBJ_MATERIAL;
     obj->name = INTERN(STRING(ta_material));
-    obj_field_add(obj, F_ATOM_STRING, INTERN("name"), OFFSETOF(ta_material, name));
+    obj_field_add(obj, F_ATOM_STRING, INTERN("name"), OFFSETOF(ta_material, name), 0);
     dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_material)), obj);
 
     obj = &tg_schemas[F_OBJ_MESH];
     obj->type = F_OBJ_MESH;
     obj->name = INTERN(STRING(ta_mesh));
-    obj_field_add(obj, F_ATOM_STRING, INTERN("name"), OFFSETOF(ta_mesh, name));
-    obj_field_add(obj, F_ATOM_STRING, INTERN("path"), OFFSETOF(ta_mesh, path));
+    obj_field_add(obj, F_ATOM_STRING, INTERN("name"), OFFSETOF(ta_mesh, name), 0);
+    obj_field_add(obj, F_ATOM_STRING, INTERN("path"), OFFSETOF(ta_mesh, path), 0);
     dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_mesh)), obj);
 
     obj = &tg_schemas[F_OBJ_SHADER];
     obj->type = F_OBJ_SHADER;
     obj->name = INTERN(STRING(ta_shader));
-    obj_field_add(obj, F_ATOM_STRING, INTERN("name"), OFFSETOF(ta_shader, name));
-    obj_field_add(obj, F_ATOM_STRING, INTERN("path"), OFFSETOF(ta_shader, path));
+    obj_field_add(obj, F_ATOM_STRING, INTERN("name"), OFFSETOF(ta_shader, name), 0);
+    obj_field_add(obj, F_ATOM_STRING, INTERN("path"), OFFSETOF(ta_shader, path), 0);
     dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_shader)), obj);
 
     obj = &tg_schemas[F_OBJ_TEXTURE];
     obj->type = F_OBJ_TEXTURE;
     obj->name = INTERN(STRING(ta_texture));
-    obj_field_add(obj, F_ATOM_STRING, INTERN("name"), OFFSETOF(ta_texture, name));
-    obj_field_add(obj, F_ATOM_STRING, INTERN("path"), OFFSETOF(ta_texture, path));
+    obj_field_add(obj, F_ATOM_STRING, INTERN("name"), OFFSETOF(ta_texture, name), 0);
+    obj_field_add(obj, F_ATOM_STRING, INTERN("path"), OFFSETOF(ta_texture, path), 0);
     dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_texture)), obj);
-}
 
-#define INDENT(f, l) for (int i = 0; i < l; i++) { fprintf(f, "  "); }
+    obj = &tg_schemas[F_OBJ_ENTITY];
+    obj->type = F_OBJ_ENTITY;
+    obj->name = INTERN(STRING(ta_entity));
+    obj_field_add(obj, F_ATOM_STRING,   INTERN("name"),      OFFSETOF(ta_entity, name), 0);
+    obj_field_add(obj, F_ATOM_STRING,   INTERN("material"),  OFFSETOF(ta_entity, material), 0);
+    obj_field_add(obj, F_ATOM_STRING,   INTERN("mesh"),      OFFSETOF(ta_entity, mesh), 0);
+    obj_field_add(obj, F_ATOM_STRING,   INTERN("shader"),    OFFSETOF(ta_entity, shader), 0);
+    obj_field_add(obj, F_ATOM_STRING,   INTERN("texture"),   OFFSETOF(ta_entity, texture), 0);
+    obj_field_add(obj, F_OBJ_TRANSFORM, INTERN("transform"), OFFSETOF(ta_entity, transform), 0);
+    dlb_hash_insert(&tg_schemas_by_name, CSTR(STRING(ta_entity)), obj);
+}
 
 void obj_print(FILE *f, ta_field_type type, u8 *ptr, int level)
 {
@@ -139,8 +171,15 @@ void obj_print(FILE *f, ta_field_type type, u8 *ptr, int level)
 
     for (ta_schema_field *field = schema->fields; field != dlb_vec_end(schema->fields); field++)
     {
-        INDENT(f, level + 1);
-        if (field->type >= F_OBJ) {
+        if (field->alias) {
+            continue;
+        }
+
+        for (int i = 0; i < level + 1; i++) {
+            fprintf(f, "  ");
+        }
+
+        if (field->type > F_ATOM_END) {
             fprintf(f, "%s:\n", field->name);
             obj_print(f, field->type, ptr + field->offset, level + 1);
         } else {
