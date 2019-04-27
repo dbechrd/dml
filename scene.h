@@ -22,30 +22,8 @@ typedef enum token_type {
     TOKEN_ARRAY_END,
     TOKEN_OBJECT_START,
     TOKEN_OBJECT_END,
+    TOKEN_LIST_SEPARATOR,
 } token_type;
-
-static inline const char *token_type_str(token_type type) {
-    switch(type) {
-        case TOKEN_UNKNOWN:      return "????????";
-        case TOKEN_EOF:          return "EOF";
-        case TOKEN_WHITESPACE:   return "WHITESPACE";
-        case TOKEN_NEWLINE:      return "NEWLINE";
-        case TOKEN_INDENT:       return "INDENT";
-        case TOKEN_COMMENT:      return "COMMENT";
-        case TOKEN_IDENTIFIER:   return "IDENTIFIER";
-        case TOKEN_KW_NULL:      return "KEYWORD";
-        case TOKEN_KW_TRUE:      return "KEYWORD";
-        case TOKEN_KW_FALSE:     return "KEYWORD";
-        case TOKEN_INT:          return "INT";
-        case TOKEN_FLOAT:        return "FLOAT";
-        case TOKEN_STRING:       return "STRING";
-        case TOKEN_ARRAY_START:  return "ARRAY_START";
-        case TOKEN_ARRAY_END:    return "ARRAY_END";
-        case TOKEN_OBJECT_START: return "OBJECT_START";
-        case TOKEN_OBJECT_END:   return "OBJECT_END";
-        default: DLB_ASSERT(!"Unknown token type");  return 0;
-    }
-};
 
 typedef struct token {
     token_type type;
@@ -68,8 +46,10 @@ typedef struct scene_ref_s {
 
 typedef struct ta_scene_s {
     const char *name;
-    dlb_hash refs_by_name;
+
     scene_ref *refs;
+    dlb_hash refs_by_name;
+
     ta_sun_light *sun_lights;
     ta_point_light  *point_lights;
     ta_material *materials;
@@ -79,6 +59,7 @@ typedef struct ta_scene_s {
     ta_entity *entities;
 } ta_scene;
 
+const char *token_type_str(token_type type);
 ta_scene *scene_init(const char *name);
 ta_scene *scene_load(file *f);
 void scene_free(ta_scene *scn);

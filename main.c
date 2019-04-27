@@ -21,7 +21,7 @@
 #include "dlb_arena.h"
 
 ta_entity *entity_create(ta_scene *scn, const char *name) {
-    ta_entity *e = scene_obj_init(scn, F_OBJ_ENTITY);
+    ta_entity *e = scene_obj_init(scn, F_TA_ENTITY);
     e->type = ENTITY_DEFAULT;
     e->name = name;
     e->transform.position.x = 1.1f;

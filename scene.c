@@ -7,6 +7,31 @@
 #include "dlb_vector.h"
 #include "dlb_hash.h"
 
+const char *token_type_str(token_type type)
+{
+    switch(type) {
+        case TOKEN_UNKNOWN:        return "????????";
+        case TOKEN_EOF:            return "EOF";
+        case TOKEN_WHITESPACE:     return "WHITESPACE";
+        case TOKEN_NEWLINE:        return "NEWLINE";
+        case TOKEN_INDENT:         return "INDENT";
+        case TOKEN_COMMENT:        return "COMMENT";
+        case TOKEN_IDENTIFIER:     return "IDENTIFIER";
+        case TOKEN_KW_NULL:        return "KEYWORD";
+        case TOKEN_KW_TRUE:        return "KEYWORD";
+        case TOKEN_KW_FALSE:       return "KEYWORD";
+        case TOKEN_INT:            return "INT";
+        case TOKEN_FLOAT:          return "FLOAT";
+        case TOKEN_STRING:         return "STRING";
+        case TOKEN_ARRAY_START:    return "ARRAY_START";
+        case TOKEN_ARRAY_END:      return "ARRAY_END";
+        case TOKEN_OBJECT_START:   return "OBJECT_START";
+        case TOKEN_OBJECT_END:     return "OBJECT_END";
+        case TOKEN_LIST_SEPARATOR: return "LIST_SEPARATOR";
+        default: DLB_ASSERT(!"Unknown token type");  return 0;
+    }
+};
+
 ta_scene *scene_init(const char *name)
 {
     ta_scene *scene = dlb_calloc(1, sizeof(*scene));
@@ -186,57 +211,30 @@ static token *token_read(file *f, token **tokens)
         {
             token->type = TOKEN_ARRAY_START;
             file_expect_char(f, C_ARRAY_START, 1);
-            // TODO: Start buffering array elements
-#if 0
-            if (is_array) {
-                file_expect_char(f, C_ARRAY_START, 1);
-                file_allow_char(f, C_WHITESPACE, 0);
-                if (array_len > 0) {
-                    p->length = array_len;
-                    dlb_vec_reserve(p->value.float_array, p->length);
-                } else {
-                    p->length = SIZE_MAX;
-                    dlb_vec_alloc(p->value.int_array);
-                }
-                for (size_t i = 0; i < p->length; i++) {
-                    p->value.float_array[i] = read_float(f, CHAR_SEPARATOR "(,");
-                    file_allow_char(f, C_WHITESPACE, 0);
-                    if (p->length != SIZE_MAX && i < p->length - 1) {
-                        file_expect_char(f, ",", 1);
-                    } else {
-                        file_allow_char(f, ",", 1);
-                    }
-                    file_allow_char(f, C_WHITESPACE, 0);
-                    if (p->length == SIZE_MAX &&
-                        str_contains_chr(C_ARRAY_END, file_peek(f))) {
-                        p->length = i + 1;
-                        break;
-                    }
-                }
-                file_expect_char(f, C_ARRAY_END, 1);
-            }
-#endif
             break;
         }
         case ']':
         {
             token->type = TOKEN_ARRAY_END;
             file_expect_char(f, C_ARRAY_END, 1);
-            // TODO: Finalize array
             break;
         }
         case '{':
         {
             token->type = TOKEN_OBJECT_START;
             file_expect_char(f, C_OBJECT_START, 1);
-            // TODO: Start buffering object properties
             break;
         }
         case '}':
         {
             token->type = TOKEN_OBJECT_END;
             file_expect_char(f, C_OBJECT_END, 1);
-            // TODO: Finalize object
+            break;
+        }
+        case ',':
+        {
+            token->type = TOKEN_LIST_SEPARATOR;
+            file_expect_char(f, C_LIST_SEPARATOR, 1);
             break;
         }
         default:
@@ -307,6 +305,9 @@ static void tokens_print(token *tokens)
             } case TOKEN_OBJECT_END: {
                 printf("}");
                 break;
+            } case TOKEN_LIST_SEPARATOR: {
+                printf(",");
+                break;
             } default: {
                 DLB_ASSERT(!"Unexpected token type, don't know how to print");
             }
@@ -358,6 +359,7 @@ static void tokens_print_debug(token *tokens)
             }
             case TOKEN_ARRAY_START: case TOKEN_ARRAY_END:
             case TOKEN_OBJECT_START: case TOKEN_OBJECT_END:
+            case TOKEN_LIST_SEPARATOR:
             {
                 break;
             } default: {
@@ -373,37 +375,37 @@ void *scene_obj_init(ta_scene *scene, ta_field_type type)
 {
     void *obj = 0;
     switch (type) {
-        case F_OBJ_SUN_LIGHT: {
+        case F_TA_SUN_LIGHT: {
             ta_sun_light *light = dlb_vec_alloc(scene->sun_lights);
             light->scene = scene;
             obj = light;
             break;
-        } case F_OBJ_POINT_LIGHT: {
+        } case F_TA_POINT_LIGHT: {
             ta_point_light *light = dlb_vec_alloc(scene->point_lights);
             light->scene = scene;
             obj = light;
             break;
-        } case F_OBJ_MATERIAL: {
+        } case F_TA_MATERIAL: {
             ta_material *material = dlb_vec_alloc(scene->materials);
             material->scene = scene;
             obj = material;
             break;
-        } case F_OBJ_MESH: {
+        } case F_TA_MESH: {
             ta_mesh *mesh = dlb_vec_alloc(scene->meshes);
             mesh->scene = scene;
             obj = mesh;
             break;
-        } case F_OBJ_SHADER: {
+        } case F_TA_SHADER: {
             ta_shader *shader = dlb_vec_alloc(scene->shaders);
             shader->scene = scene;
             obj = shader;
             break;
-        } case F_OBJ_TEXTURE: {
+        } case F_TA_TEXTURE: {
             ta_texture *texture = dlb_vec_alloc(scene->textures);
             texture->scene = scene;
             obj = texture;
             break;
-        } case F_OBJ_ENTITY: {
+        } case F_TA_ENTITY: {
             ta_entity *entity = dlb_vec_alloc(scene->entities);
             entity->scene = scene;
             obj = entity;
@@ -424,8 +426,10 @@ void scene_parse(ta_scene *scene, token *tokens)
         int indent;
     } stack[16] = { 0 };
 
-    int level = 0;   // Current level of indentation
     int indent = 0;  // Current line indent counter
+    int level = 0;   // Current level of indentation
+    int braces = 0;  // Current level of curly braces
+    int sp = 0;      // "Stack pointer" index into stack
 
     for (token *tok = tokens; tok != dlb_vec_end(tokens); tok++) {
         switch (tok->type) {
@@ -442,70 +446,89 @@ void scene_parse(ta_scene *scene, token *tokens)
             } case TOKEN_COMMENT: {
                 break;
             } case TOKEN_IDENTIFIER: {
-                for (int i = level; i >= 0; i--) {
-                    if (indent >= stack[i].indent) {
-                        break;
+                if (braces) {
+                    DLB_ASSERT(level);
+                    stack[sp].indent = 0;
+                } else {
+                    for (int i = level; i >= 0; i--) {
+                        if (indent >= stack[i].indent) {
+                            break;
+                        }
+                        DLB_ASSERT(level);
+                        level--;
+                        sp--;
                     }
-                    level--;
+                    stack[sp].indent = indent;
                 }
-                stack[level].indent = indent;
 
                 if (level) {
-                    ta_schema_field *field = obj_field_find(stack[level-1].type, tok->value.string);
+                    ta_schema_field *field = obj_field_find( stack[sp-1].type,
+                        tok->value.string);
                     if (!field) {
-                        PANIC("Unexpected field '%s' on object '%s'\n", tok->value.string, stack[level-1].name);
+                        PANIC("Unexpected field '%s' on %s '%s'\n",
+                            tok->value.string, ta_field_type_str(stack[sp-1].type),
+                            stack[sp-1].name);
                     }
                     DLB_ASSERT(field->type);
-                    stack[level].type = field->type;
-                    stack[level].name = field->name;
-                    stack[level].ptr = ((u8 *)stack[level-1].ptr + field->offset);
+                    stack[sp].type = field->type;
+                    stack[sp].name = field->name;
+                    stack[sp].ptr = ((u8 *)stack[sp-1].ptr + field->offset);
                 } else {
-                    ta_schema *obj = dlb_hash_search(&tg_schemas_by_name, tok->value.string, tok->length);
+                    ta_schema *obj = dlb_hash_search(&tg_schemas_by_name,
+                        tok->value.string, tok->length);
                     if (!obj) {
                         PANIC("Unexpected type name '%s'\n", tok->value.string);
                     }
                     DLB_ASSERT(obj->type);
                     DLB_ASSERT(obj->name == tok->value.string);
-                    stack[level].type = obj->type;
-                    stack[level].name = tok->value.string;
-                    stack[level].ptr = scene_obj_init(scene, obj->type);
+                    stack[sp].type = obj->type;
+                    stack[sp].name = tok->value.string;
+                    stack[sp].ptr = scene_obj_init(scene, obj->type);
                 }
-                level++;
+                if (!braces && stack[sp].type > F_ATOM_END) {
+                    level++;
+                    sp++;
+                }
                 break;
             } case TOKEN_KW_NULL: {
-                DLB_ASSERT(level);
-                DLB_ASSERT(stack[level-1].type == F_ATOM_STRING);
-                level--;
+                DLB_ASSERT(stack[sp].type == F_ATOM_STRING);
                 break;
             } case TOKEN_INT: {
-                DLB_ASSERT(level);
                 DLB_ASSERT(
-                    stack[level-1].type == F_ATOM_INT ||
-                    stack[level-1].type == F_ATOM_UINT
+                    stack[sp].type == F_ATOM_INT ||
+                    stack[sp].type == F_ATOM_UINT
                 );
-                int *fp = stack[level-1].ptr;
+                int *fp = stack[sp].ptr;
                 *fp = tok->value.as_int;
-                level--;
                 break;
             } case TOKEN_FLOAT: {
-                DLB_ASSERT(level);
-                DLB_ASSERT(stack[level-1].type == F_ATOM_FLOAT);
-                float *fp = stack[level-1].ptr;
+                DLB_ASSERT(stack[sp].type == F_ATOM_FLOAT);
+                float *fp = stack[sp].ptr;
                 *fp = tok->value.as_float;
-                level--;
                 break;
             } case TOKEN_STRING: {
-                DLB_ASSERT(level);
-                DLB_ASSERT(stack[level-1].type == F_ATOM_STRING);
-                const char **fp = stack[level-1].ptr;
+                DLB_ASSERT(stack[sp].type == F_ATOM_STRING);
+                const char **fp = stack[sp].ptr;
                 *fp = tok->value.string;
-                if (stack[level-1].name == sym_ident_name) {
+                if (stack[sp].name == sym_ident_name) {
                     scene_ref *ref = dlb_vec_alloc(scene->refs);
-                    ref->type = stack[level-2].type;
-                    ref->ptr = stack[level-2].ptr;
+                    ref->type = stack[sp-1].type;
+                    ref->ptr = stack[sp-1].ptr;
                     dlb_hash_insert(&scene->refs_by_name, tok->value.string, tok->length, ref);
                 }
+                break;
+            } case TOKEN_OBJECT_START: {
+                DLB_ASSERT(stack[sp-1].type > F_ATOM_END);
                 level--;
+                braces++;
+                break;
+            } case TOKEN_OBJECT_END: {
+                DLB_ASSERT(braces);
+                braces--;
+                sp--;
+                break;
+            } case TOKEN_LIST_SEPARATOR: {
+                DLB_ASSERT(braces);
                 break;
             } default: {
                 PANIC("Unexpected token %s\n", token_type_str(tok->type));
@@ -519,7 +542,7 @@ ta_scene *scene_load(file *f)
     ta_scene *scene = scene_init(f->filename);
     token *tokens = scene_tokenize(f);
     //tokens_print(tokens);
-    //tokens_print_debug(tokens);
+    tokens_print_debug(tokens);
     scene_parse(scene, tokens);
     dlb_vec_free(tokens);
     return scene;
@@ -530,25 +553,25 @@ void scene_print(ta_scene *scene, FILE *hnd)
     // TODO: Register scene as a schema that has OBJ_ARRAY of entities
     printf("Scene name: %s\n", scene->name);
     for (ta_sun_light *o = scene->sun_lights; o != dlb_vec_end(scene->sun_lights); o++) {
-        obj_print(hnd, F_OBJ_SUN_LIGHT, (void *)o, 0);
+        obj_print(hnd, F_TA_SUN_LIGHT, (void *)o, 0);
     }
     for (ta_point_light *o = scene->point_lights; o != dlb_vec_end(scene->point_lights); o++) {
-        obj_print(hnd, F_OBJ_POINT_LIGHT, (void *)o, 0);
+        obj_print(hnd, F_TA_POINT_LIGHT, (void *)o, 0);
     }
     for (ta_entity *o = scene->entities; o != dlb_vec_end(scene->entities); o++) {
-        obj_print(hnd, F_OBJ_ENTITY, (void *)o, 0);
+        obj_print(hnd, F_TA_ENTITY, (void *)o, 0);
     }
     for (ta_material *o = scene->materials; o != dlb_vec_end(scene->materials); o++) {
-        obj_print(hnd, F_OBJ_MATERIAL, (void *)o, 0);
+        obj_print(hnd, F_TA_MATERIAL, (void *)o, 0);
     }
     for (ta_mesh *o = scene->meshes; o != dlb_vec_end(scene->meshes); o++) {
-        obj_print(hnd, F_OBJ_MESH, (void *)o, 0);
+        obj_print(hnd, F_TA_MESH, (void *)o, 0);
     }
     for (ta_shader *o = scene->shaders; o != dlb_vec_end(scene->shaders); o++) {
-        obj_print(hnd, F_OBJ_SHADER, (void *)o, 0);
+        obj_print(hnd, F_TA_SHADER, (void *)o, 0);
     }
     for (ta_texture *o = scene->textures; o != dlb_vec_end(scene->textures); o++) {
-        obj_print(hnd, F_OBJ_TEXTURE, (void *)o, 0);
+        obj_print(hnd, F_TA_TEXTURE, (void *)o, 0);
     }
     fflush(hnd);
 }

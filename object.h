@@ -14,18 +14,18 @@ typedef enum {
     F_ATOM_END = F_ATOM_STRING,
 
     // Object types
-    F_OBJ_VEC3,
-    F_OBJ_COLOR3,
-    F_OBJ_VEC4,
-    F_OBJ_COLOR4,
-    F_OBJ_TRANSFORM,
-    F_OBJ_SUN_LIGHT,
-    F_OBJ_POINT_LIGHT,
-    F_OBJ_MATERIAL,
-    F_OBJ_MESH,
-    F_OBJ_SHADER,
-    F_OBJ_TEXTURE,
-    F_OBJ_ENTITY,
+    F_TA_VEC3,
+    F_TA_COLOR3,
+    F_TA_VEC4,
+    F_TA_COLOR4,
+    F_TA_TRANSFORM,
+    F_TA_SUN_LIGHT,
+    F_TA_POINT_LIGHT,
+    F_TA_MATERIAL,
+    F_TA_MESH,
+    F_TA_SHADER,
+    F_TA_TEXTURE,
+    F_TA_ENTITY,
     F_COUNT,
 } ta_field_type;
 
@@ -45,7 +45,7 @@ typedef struct {
 extern ta_schema tg_schemas[];
 extern dlb_hash tg_schemas_by_name;
 
-const char *ta_object_type_str(ta_field_type type);
+const char *ta_field_type_str(ta_field_type type);
 void obj_field_add(ta_schema *obj, ta_field_type type, const char *name,
     u32 offset, bool alias);
 ta_schema_field *obj_field_find(ta_field_type type, const char *name);

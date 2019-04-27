@@ -10,9 +10,20 @@ unsigned int parse_uint(char *buf)
     return (unsigned int)value;
 }
 
+int parse_int_binary(char *buf)
+{
+    DLB_ASSERT(!"[PARSE_ERROR] Binary integers not yet supported.");
+    return 0;
+}
+
 int parse_int(char *buf)
 {
-    long value = strtol(buf, 0, 10);
+    long value;
+    if (buf[0] == '0' && buf[1] == 'b') {
+        value = parse_int_binary(buf);
+    } else {
+        value = strtol(buf, 0, 10);
+    }
     return (int)value;
 }
 

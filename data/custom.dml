@@ -2,19 +2,9 @@ ta_entity:
   name: "entity_1"
   material: "material_1"
   transform:
-    position:
-      x: 1.0
-      y: 2.0
-      z: 3.0
-    rotation:
-      x: 1.0
-      y: 2.0
-      z: 3.0
-      w: 4.0
-    scale:
-      x: 1.0
-      y: 2.0
-      z: 3.0
+    position: { x: 1.0, y: 2.0, z: 3.0 }
+    rotation: { x: 1.0, y: 2.0, z: 3.0, w: 4.0 }
+    scale:    { x: 1.0, y: 1.0, z: 1.0 }
 ta_material:
   name: "material_1"
 ta_mesh:
@@ -28,24 +18,12 @@ ta_texture:
   path: "texture_1_path"
 ta_sun_light:
   name: "sun"
-  direction:
-    x: 1.0
-    y: 2.0
-    z: 3.0
-  color:
-    r: 1.0
-    g: 2.0
-    b: 3.0
+  direction: { x: 1.0, y: 2.0, z: 3.0 }
+  color:     { r: 1.0, g: 2.0, b: 3.0 }
 ta_point_light:
   name: "point_light_1"
-  position:
-    x: 1.0
-    y: 2.0
-    z: 3.0
-  color:
-    r: 1.0
-    g: 2.0
-    b: 3.0
+  position: { x: 1.0, y: 2.0, z: 3.0 }
+  color:    { r: 1.0, g: 2.0, b: 3.0 }
 #ta_texture:
 #  name: "texture_example"
 #  test: "First\\\"hi\"\\Second"
