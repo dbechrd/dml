@@ -542,7 +542,7 @@ ta_scene *scene_load(file *f)
     ta_scene *scene = scene_init(f->filename);
     token *tokens = scene_tokenize(f);
     //tokens_print(tokens);
-    tokens_print_debug(tokens);
+    //tokens_print_debug(tokens);
     scene_parse(scene, tokens);
     dlb_vec_free(tokens);
     return scene;

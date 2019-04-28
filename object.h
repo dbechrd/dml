@@ -15,9 +15,9 @@ typedef enum {
 
     // Object types
     F_TA_VEC3,
-    F_TA_COLOR3,
+    F_TA_RGB,
     F_TA_VEC4,
-    F_TA_COLOR4,
+    F_TA_RGBA,
     F_TA_TRANSFORM,
     F_TA_SUN_LIGHT,
     F_TA_POINT_LIGHT,
@@ -58,8 +58,16 @@ typedef struct {
 } ta_vec3;
 
 typedef struct {
+    float r, g, b;
+} ta_rgb;
+
+typedef struct {
     float x, y, z, w;
 } ta_vec4;
+
+typedef struct {
+    float r, g, b, a;
+} ta_rgba;
 
 typedef struct {
     ta_vec3 position;
