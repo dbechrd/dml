@@ -1,6 +1,9 @@
 # DML
 Dan's Markup Language: YAML-inspired minimalistic, human-readable markup
 
+### Dependencies
+https://github.com/dbechrd/dlb
+
 ### Example Usage
 My primary goal with this project was to use DML to describe scene data in my 3D game engine. The following is the example file from the data directory of this project `custom.dml`:
 
