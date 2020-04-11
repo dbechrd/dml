@@ -39,7 +39,7 @@ My primary goal with this project was to use DML to describe scene data in my 3D
       color:    { r: 1.0, g: 2.0, b: 3.0 }
 
 ### Updates
-DML has been integrated into my closed source (as of writing) game engine and this repository will most likely not be updated or supported as a standalone product. That said, I think this project is serves as a fairly complete example of how to implement a basic parser in C that can serialize/deserialize C structs to a human-readable file format. The main advantage of the hard-coded schema in C is that it allows keeping the schema up-to-date when the struct's are renamed using Visual Studio's refactoring tools.
+DML has been integrated into my closed source (as of writing) game engine and this repository will most likely not be updated or supported as a standalone product. That said, I think this project serves as a fairly complete example of how to implement a basic parser in C that can serialize/deserialize C structs to a human-readable file format. The main advantage of the hard-coded schema in C is that it allows keeping the schema up-to-date when the struct's are renamed using Visual Studio's refactoring tools.
 
 ### Support
 If you have any questions or comments about the codebase, feel free to email me at `my github username at gmail.com`.
